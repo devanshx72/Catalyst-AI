@@ -1,252 +1,605 @@
 {% extends 'base.html' %}
 
-{% block title %}
-Learning Plan - {{ phase.name }}
-{% endblock %}
+{% block title %}Learning Plan - {{ phase.name }}{% endblock %}
 
 {% block content %}
-<div class="container my-4">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Learning Plan: {{ phase.name }}</h2>
-                <a href="{{ url_for('roadmap_bp.roadmap') }}" class="btn btn-outline-primary">
-                    <i class="fas fa-arrow-left"></i> Back to Roadmap
-                </a>
-            </div>
-            
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="card-title mb-0">Phase Description</h3>
-                </div>
-                <div class="card-body">
-                    <p>{{ phase.description }}</p>
-                    <div class="skills d-flex flex-wrap gap-2 mt-3">
-                        {% for skill in phase.skills %}
-                            <span class="badge bg-secondary">{{ skill }}</span>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
 
-            <div class="learning-plan">
-                {% for week in phase.learning_plan.weekly_schedule %}
-                    {% set weekIndex = loop.index0 %}
-                    <div class="card mb-4 week-card">
-                        <div class="card-header bg-primary text-white">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h3 class="mb-0">Week {{ week.week }}</h3>
-                                
-                                <!-- New: AI Tutor Button -->
-                                <a href="{{ url_for('tutor_bp.tutor_page', phase_id=phase_id, module_id=week.week) }}" class="btn btn-light">
-                                    <i class="fas fa-robot"></i> AI Tutor for Week {{ week.week }}
-                                </a>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="learning-objectives mb-4">
-                                <h4 class="text-primary">Learning Objectives</h4>
-                                <ul class="list-group list-group-flush">
-                                    {% for objective in week.learning_objectives %}
-                                        <li class="list-group-item">{{ objective }}</li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                            
-                            <div class="daily-tasks">
-                                <h4 class="text-primary">Daily Tasks</h4>
-                                
-                                <!-- Task Completion Progress -->
-                                {% set total_tasks = week.daily_tasks|length %}
-                                {% set completed_tasks = 0 %}
-                                {% for task in week.daily_tasks %}
-                                    {% if task.completed %}
-                                        {% set completed_tasks = completed_tasks + 1 %}
-                                    {% endif %}
-                                {% endfor %}
-                                
-                                {% set progress = (completed_tasks / total_tasks * 100)|round if total_tasks > 0 else 0 %}
-                                
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span>Progress: {{ completed_tasks }}/{{ total_tasks }} tasks completed</span>
-                                    <span class="badge bg-{{ 'success' if progress == 100 else 'primary' }}">{{ progress }}%</span>
-                                </div>
-                                
-                                <div class="progress mb-4" style="height: 10px;">
-                                    <div class="progress-bar bg-{{ 'success' if progress == 100 else 'primary' }}" 
-                                         role="progressbar" 
-                                         style="width: {{ progress }}%;" 
-                                         aria-valuenow="{{ progress }}" 
-                                         aria-valuemin="0" 
-                                         aria-valuemax="100">
-                                    </div>
-                                </div>
-                                
-                                <!-- Tasks Table -->
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Day</th>
-                                                <th>Tasks</th>
-                                                <th>Resources</th>
-                                                <th>Duration</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for task in week.daily_tasks %}
-                                                {% set dayIndex = loop.index0 %}
-                                                <tr>
-                                                    <td>Day {{ task.day }}</td>
-                                                    <td>
-                                                        <ul class="mb-0 ps-3">
-                                                            {% for task_item in task.tasks %}
-                                                                <li>{{ task_item }}</li>
-                                                            {% endfor %}
-                                                        </ul>
-                                                    </td>
-                                                    <td>
-                                                        <ul class="mb-0 ps-3">
-                                                            {% for resource in task.resources %}
-                                                                <li>{{ resource }}</li>
-                                                            {% endfor %}
-                                                        </ul>
-                                                    </td>
-                                                    <td>{{ task.duration_hours }} hours</td>
-                                                    <td>
-                                                        <div class="form-check form-switch">
-                                                            <input class="form-check-input task-checkbox" 
-                                                                   type="checkbox" 
-                                                                   role="switch" 
-                                                                   id="taskCheck_{{ week.week }}_{{ task.day }}"
-                                                                   data-week="{{ weekIndex }}"
-                                                                   data-day="{{ dayIndex }}"
-                                                                   {% if task.completed %}checked{% endif %}>
-                                                            <label class="form-check-label" for="taskCheck_{{ week.week }}_{{ task.day }}">
-                                                                {{ 'Completed' if task.completed else 'Mark as completed' }}
-                                                            </label>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                            
-                            <!-- Weekly Assessment -->
-                            <div class="assessment mt-4">
-                                <h4 class="text-primary">Weekly Assessment</h4>
-                                <div class="card">
-                                    <div class="card-body">
-                                        <p>{{ week.assessment }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Get all task checkboxes
-        const taskCheckboxes = document.querySelectorAll('.task-checkbox');
-        
-        // Add event listener to each checkbox
-        taskCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                const weekIndex = this.getAttribute('data-week');
-                const dayIndex = this.getAttribute('data-day');
-                const completed = this.checked;
-                
-                // Update the label text
-                const label = this.nextElementSibling;
-                label.textContent = completed ? 'Completed' : 'Mark as completed';
-                
-                // Send update to server
-                fetch('/complete-task', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        phase_id: '{{ phase_id }}',
-                        week_index: weekIndex,
-                        day_index: dayIndex,
-                        completed: completed
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status !== 'success') {
-                        console.error('Error updating task:', data.message);
-                        alert('Error updating task. Please try again.');
-                        
-                        // Revert the checkbox state
-                        this.checked = !completed;
-                        label.textContent = !completed ? 'Completed' : 'Mark as completed';
-                    } else {
-                        // Refresh the page to update progress bars
-                        location.reload();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error updating task. Please try again.');
-                    
-                    // Revert the checkbox state
-                    this.checked = !completed;
-                    label.textContent = !completed ? 'Completed' : 'Mark as completed';
-                });
-            });
-        });
-    });
-</script>
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
 <style>
-    .week-card {
-        border: none;
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        transition: all 0.3s ease;
-    }
+  /* --- Modern Design System (Consistent with Roadmap) --- */
+  :root {
+    --primary-start: #6366f1;
+    --primary-end: #a78bfa;
+    --primary-gradient: linear-gradient(135deg, var(--primary-start), var(--primary-end));
     
-    .week-card:hover {
-        transform: translateY(-5px);
-    }
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(255, 255, 255, 0.6);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
     
-    .card-header h3 {
-        font-size: 1.25rem;
-    }
+    --text-main: #1e293b;
+    --text-muted: #64748b;
     
-    .text-primary {
-        color: #2b6cb0 !important;
-    }
-    
-    .list-group-item {
-        border-left: none;
-        border-right: none;
-        padding: 0.75rem 0;
-    }
-    
-    .progress {
-        height: 0.5rem;
-        border-radius: 0.25rem;
-        background-color: #e9ecef;
-    }
-    
-    .skills .badge {
-        font-size: 0.85rem;
-        padding: 0.5rem 0.75rem;
-        border-radius: 1rem;
-    }
-    
-    .assessment .card {
-        border-left: 5px solid #4299e1;
-    }
+    --success: #10b981;
+    --warning: #f59e0b;
+  }
+
+  /* Animated Background */
+  body {
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  .container-wrapper {
+    position: relative;
+    overflow: hidden;
+    padding-bottom: 5rem;
+  }
+
+  /* Decorative Blobs */
+  .container-wrapper::before {
+    content: '';
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(99,102,241,0.1) 0%, rgba(0,0,0,0) 70%);
+    top: -100px;
+    left: -200px;
+    z-index: -1;
+    animation: floatBlob 10s infinite alternate;
+  }
+  .container-wrapper::after {
+    content: '';
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(167,139,250,0.1) 0%, rgba(0,0,0,0) 70%);
+    bottom: 0;
+    right: -150px;
+    z-index: -1;
+    animation: floatBlob 10s infinite alternate-reverse;
+  }
+
+  @keyframes floatBlob {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(50px, 50px); }
+  }
+
+  .container { max-width: 1200px; }
+
+  /* --- Phase Header --- */
+  .phase-header {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 3rem 2.5rem;
+    border-radius: 24px;
+    margin-bottom: 3rem;
+    box-shadow: 0 20px 40px rgba(99, 102, 241, 0.25);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .phase-header::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background: url('data:image/svg+xml,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" stroke="white" stroke-width="2" fill="none" opacity="0.1"/></svg>') repeat;
+    background-size: 150px;
+    opacity: 0.3;
+  }
+
+  .phase-title {
+    font-weight: 800;
+    font-size: 2.2rem;
+    margin: 0;
+    position: relative;
+    z-index: 2;
+    letter-spacing: -0.5px;
+  }
+
+  .phase-desc {
+    opacity: 0.9;
+    margin-top: 0.75rem;
+    font-size: 1.1rem;
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+  }
+
+  .back-btn {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 10;
+  }
+
+  .back-btn:hover {
+    background: white;
+    color: #6366f1;
+    transform: translateY(-2px);
+  }
+
+  /* --- Week Card (Glassmorphism) --- */
+  .week-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    margin-bottom: 2rem;
+    box-shadow: var(--glass-shadow);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .week-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Week Header */
+  .week-header {
+    background: white;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+
+  .week-header:hover {
+    background: #f8fafc;
+  }
+
+  .week-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .week-number {
+    background: #eff6ff;
+    color: #4f46e5;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 800;
+  }
+
+  .week-toggle {
+    color: var(--text-muted);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .week-toggle.collapsed { transform: rotate(-90deg); }
+
+  /* AI Tutor Button */
+  .ai-tutor-btn {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: none;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ai-tutor-btn:hover {
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+  }
+  
+  .ai-tutor-btn::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: 0.5s;
+  }
+  .ai-tutor-btn:hover::after { left: 100%; }
+
+  .week-body { padding: 2rem; }
+
+  /* --- Content Sections --- */
+  .section-title {
+    color: var(--text-main);
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin: 1.5rem 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .section-title i { color: #6366f1; }
+
+  /* Objectives */
+  .objectives-list {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+  }
+  
+  .objectives-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px dashed #cbd5e1;
+    color: var(--text-main);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .objectives-list li:last-child { border-bottom: none; }
+  .objectives-list i { margin-top: 4px; }
+
+  /* Progress Bar (Shimmering) */
+  .progress-container {
+    background: #e2e8f0;
+    border-radius: 50px;
+    height: 12px;
+    overflow: hidden;
+    margin: 1rem 0;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background-image: var(--primary-gradient);
+    border-radius: 50px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+  }
+
+  .progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.2) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.2) 75%, transparent 75%, transparent);
+    background-size: 1rem 1rem;
+    animation: progressShimmer 1s linear infinite;
+  }
+  
+  @keyframes progressShimmer {
+    from { background-position: 0 0; }
+    to { background-position: 1rem 1rem; }
+  }
+
+  /* Task Table */
+  .task-table { font-size: 0.95rem; border-collapse: separate; border-spacing: 0 10px; }
+  
+  .task-table thead th {
+    background: transparent;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    border: none;
+    padding-bottom: 0.5rem;
+  }
+
+  .task-table tbody tr {
+    background: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    transition: transform 0.2s;
+  }
+  
+  .task-table tbody tr:hover {
+    transform: scale(1.01);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+  }
+
+  .task-table td {
+    vertical-align: top;
+    padding: 1.25rem 1rem;
+    border-top: 1px solid #f1f5f9;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  
+  .task-table td:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; border-left: 1px solid #f1f5f9; }
+  .task-table td:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; border-right: 1px solid #f1f5f9; }
+
+  .task-list { margin: 0; padding-left: 1.2rem; }
+  .task-list li { margin-bottom: 0.4rem; color: var(--text-main); }
+  .task-list li::marker { color: #6366f1; }
+
+  /* Switch */
+  .form-switch .form-check-input {
+    width: 3.2rem; height: 1.6rem;
+    background-color: #cbd5e0; 
+    border-color: #cbd5e0;
+    cursor: pointer;
+    transition: background-position .15s ease-in-out;
+  }
+  
+  .form-switch .form-check-input:checked {
+    background-color: var(--success); 
+    border-color: var(--success);
+  }
+
+  /* Assessment Card */
+  .assessment-card {
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    border-left: 5px solid #3b82f6;
+    border-radius: 12px;
+    padding: 1.5rem;
+    color: #1e3a8a;
+  }
+
+  /* Skills Badges */
+  .skills-badge {
+    background: white;
+    color: #4f46e5;
+    padding: 0.6rem 1.2rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    border: 1px solid #e0e7ff;
+    transition: transform 0.2s;
+  }
+  .skills-badge:hover { transform: translateY(-2px); }
+
+  @media (max-width: 768px) {
+    .phase-header { padding: 2rem 1.5rem; text-align: center; }
+    .phase-header .d-flex { flex-direction: column; }
+    .week-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .ai-tutor-btn { width: 100%; justify-content: center; margin-top: 0.5rem; }
+  }
 </style>
+
+<div class="container-wrapper">
+<div class="container my-5" data-aos="fade-up">
+  
+  <div class="phase-header d-flex justify-content-between align-items-center flex-wrap gap-3" data-aos="fade-down">
+    <div>
+      <h1 class="phase-title">Learning Plan: {{ phase.name }}</h1>
+      <p class="phase-desc mb-0">{{ phase.description }}</p>
+    </div>
+    <a href="{{ url_for('roadmap_bp.roadmap') }}" class="back-btn" style="pointer-events: auto; z-index: 10;">
+      <i class="fas fa-arrow-left"></i> Back to Roadmap
+    </a>
+  </div>
+
+  <div class="d-flex flex-wrap gap-2 mb-5" data-aos="fade-up" data-aos-delay="100">
+    {% for skill in phase.skills %}
+      <span class="skills-badge"><i class="fas fa-star me-2" style="font-size: 0.8em; color: #fbbf24;"></i>{{ skill }}</span>
+    {% endfor %}
+  </div>
+
+  <div class="learning-plan">
+    {% for week in phase.learning_plan.weekly_schedule %}
+      {% set weekIndex = loop.index0 %}
+      
+      <div class="week-card" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 100 }}">
+        <div class="week-header d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-3 flex-grow-1" 
+               data-bs-toggle="collapse" 
+               data-bs-target="#week{{ week.week }}" 
+               style="cursor: pointer;">
+            
+            <div class="week-number">{{ week.week }}</div>
+            <div>
+                <h3 class="week-title">Week {{ week.week }} <i class="fas fa-chevron-down week-toggle ms-2" style="font-size: 0.8em;"></i></h3>
+            </div>
+          </div>
+          
+          <a href="{{ url_for('tutor_bp.tutor_page', phase_id=phase_id, module_id=week.week) }}" 
+             class="ai-tutor-btn" 
+             rel="noopener"
+             onclick="event.stopPropagation();">
+            <i class="fas fa-robot"></i> AI Tutor
+          </a>
+        </div>
+
+        <div class="collapse show week-body" id="week{{ week.week }}">
+          
+          <div class="mb-5">
+            <h4 class="section-title"><i class="fas fa-bullseye me-2"></i> Learning Objectives</h4>
+            <ul class="objectives-list list-unstyled">
+              {% for objective in week.learning_objectives %}
+                <li><i class="fas fa-check-circle text-success"></i> {{ objective }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          <div>
+            <h4 class="section-title"><i class="fas fa-tasks me-2"></i> Daily Tasks</h4>
+
+            {% set total_tasks = week.daily_tasks|length %}
+            {% set ns = namespace(completed=0) %}
+            {% for task in week.daily_tasks %}
+              {% if task.completed %}
+                {% set ns.completed = ns.completed + 1 %}
+              {% endif %}
+            {% endfor %}
+            {% set progress = (ns.completed / total_tasks * 100)|round(0) if total_tasks > 0 else 0 %}
+
+            <div class="d-flex justify-content-between align-items-center mb-2 mt-3">
+              <span class="fw-bold text-muted small progress-text">{{ ns.completed }}/{{ total_tasks }} TASKS COMPLETED</span>
+              <span class="badge bg-{{ 'success' if progress == 100 else 'primary' }} fs-6 progress-badge rounded-pill">{{ progress }}%</span>
+            </div>
+            <div class="progress-container">
+              <div class="progress-bar" style="width: {{ progress }}%"></div>
+            </div>
+
+            <div class="table-responsive mt-4">
+              <table class="table task-table align-middle">
+                <thead>
+                  <tr>
+                    <th style="width: 10%;">Day</th>
+                    <th style="width: 40%;">Activity</th>
+                    <th style="width: 30%;">Resources</th>
+                    <th style="width: 10%;">Time</th>
+                    <th style="width: 10%;">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for task in week.daily_tasks %}
+                    {% set dayIndex = loop.index0 %}
+                    <tr>
+                      <td><span class="fw-bold text-primary">Day {{ task.day }}</span></td>
+                      <td>
+                        <ul class="task-list">
+                          {% for task_item in task.tasks %}
+                            <li>{{ task_item }}</li>
+                          {% endfor %}
+                        </ul>
+                      </td>
+                      <td>
+                        <ul class="task-list">
+                          {% for resource in task.resources %}
+                            <li class="small text-muted"><i class="fas fa-link me-1"></i> {{ resource }}</li>
+                          {% endfor %}
+                        </ul>
+                      </td>
+                      <td><span class="badge bg-light text-dark border"><i class="far fa-clock me-1"></i> {{ task.duration_hours }}h</span></td>
+                      <td>
+                        <div class="form-check form-switch d-flex justify-content-center">
+                          <input class="form-check-input task-checkbox shadow-sm" type="checkbox" role="switch"
+                                 id="task_{{ weekIndex }}_{{ dayIndex }}" data-week="{{ weekIndex }}" data-day="{{ dayIndex }}"
+                                 {% if task.completed %}checked{% endif %}>
+                          <label class="form-check-label d-none" for="task_{{ weekIndex }}_{{ dayIndex }}">
+                            {{ 'Done' if task.completed else 'Pending' }}
+                          </label>
+                        </div>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="mt-5">
+            <h4 class="section-title"><i class="fas fa-clipboard-check me-2"></i> Weekly Assessment</h4>
+            <div class="assessment-card shadow-sm">
+              <p class="mb-0 fw-medium"><i class="fas fa-lightbulb me-2"></i> {{ week.assessment }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+</div>
+
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+  AOS.init({ duration: 800, once: true });
+
+  // Toggle icon rotation
+  document.querySelectorAll('.week-header [data-bs-toggle="collapse"]').forEach(el => {
+    el.addEventListener('click', function() {
+      const icon = this.querySelector('.week-toggle');
+      icon.classList.toggle('collapsed');
+    });
+  });
+
+  // Task completion Logic (Preserved Functionality)
+  document.querySelectorAll('.task-checkbox').forEach(cb => {
+    cb.addEventListener('change', function() {
+      const week = this.dataset.week;
+      const day = this.dataset.day;
+      const completed = this.checked;
+      const label = this.nextElementSibling;
+      const checkbox = this; 
+
+      // 1. Optimistic UI update
+      label.textContent = completed ? 'Done' : 'Pending';
+      updateProgressForWeek(checkbox); 
+
+      // 2. Send to server
+      fetch('/complete-task', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phase_id: '{{ phase_id }}',
+          week_index: week,
+          day_index: day,
+          completed: completed
+        })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === 'success') {
+          // Success
+        } else {
+          // Revert UI changes on error
+          checkbox.checked = !completed;
+          label.textContent = !completed ? 'Done' : 'Pending';
+          updateProgressForWeek(checkbox);
+          alert('Failed to update: ' + data.message);
+        }
+      })
+      .catch((err) => {
+        checkbox.checked = !completed;
+        label.textContent = !completed ? 'Done' : 'Pending';
+        updateProgressForWeek(checkbox);
+        alert('Network error. Check your connection.');
+      });
+    });
+  });
+
+  function updateProgressForWeek(element) {
+    const weekContainer = element.closest('.week-body');
+    if (!weekContainer) return;
+
+    const checkboxes = weekContainer.querySelectorAll('.task-checkbox');
+    const total = checkboxes.length;
+    const completedCount = Array.from(checkboxes).filter(c => c.checked).length;
+    
+    const percentage = total === 0 ? 0 : Math.round((completedCount / total) * 100);
+
+    const progressText = weekContainer.querySelector('.progress-text');
+    if (progressText) {
+      progressText.textContent = `${completedCount}/${total} TASKS COMPLETED`;
+    }
+
+    const progressBadge = weekContainer.querySelector('.progress-badge');
+    if (progressBadge) {
+      progressBadge.textContent = `${percentage}%`;
+      
+      if (percentage === 100) {
+        progressBadge.classList.remove('bg-primary');
+        progressBadge.classList.add('bg-success');
+      } else {
+        progressBadge.classList.add('bg-primary');
+        progressBadge.classList.remove('bg-success');
+      }
+    }
+
+    const progressBar = weekContainer.querySelector('.progress-bar');
+    if (progressBar) {
+      progressBar.style.width = `${percentage}%`;
+    }
+  }
+</script>
+
 {% endblock %}

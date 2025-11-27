@@ -8,8 +8,8 @@ def create_app(test_config=None):
     # Set up configuration
     app.config.from_mapping(
         SECRET_KEY=os.getenv('SECRET_KEY', 'dev'),
-        MONGO_URI=os.getenv('MONGO_URI', 'mongodb://localhost:27017/'),
-        DB_NAME=os.getenv('DB_NAME', 'Catalyst AI-db'),
+        MONGO_URI=os.getenv('MONGO_URI'),
+        DB_NAME=os.getenv('DB_NAME', 'catalyst_ai_db'),
     )
     
     if test_config:

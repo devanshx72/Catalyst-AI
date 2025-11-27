@@ -1,242 +1,499 @@
 {% extends 'base.html' %}
 
 {% block title %}
-Roadmap - Career Development
+🌟 Roadmap - Career Development
 {% endblock %}
 
 {% block content %}
-<div class="container my-2">
-   <div class="row">
-       <div class="col-md-12 text-center">
-           <h2>Hey <strong>{{ user.name }}</strong>, buckle up! 🚀 Here comes your epic roadmap to success!</h2>
-           <p class="lead">Follow these steps and let's make your journey unforgettable. Ready? Let's go!</p>
-       </div>
-
-       <div class="timeline my-5">
-           {% for phase in roadmap_data.phases %}
-               {% set total_days = namespace(value=0) %}
-               {% set completed_days = namespace(value=0) %}
-               
-               {% if phase.get('learning_plan') %}
-                   {% for week in phase.learning_plan.weekly_schedule %}
-                       {% for task in week.daily_tasks %}
-                           {% set total_days.value = total_days.value + 1 %}
-                           {% if task.completed %}
-                               {% set completed_days.value = completed_days.value + 1 %}
-                           {% endif %}
-                       {% endfor %}
-                   {% endfor %}
-               {% endif %}
-
-               {% set progress = (completed_days.value / total_days.value * 100)|round if total_days.value > 0 else 0 %}
-
-               <div class="container-item {% if loop.index % 2 == 0 %}right{% else %}left{% endif %}">
-                   <div class="content">
-                       <div class="d-flex justify-content-between align-items-center">
-                           <h2>{{ phase.name }}</h2>
-                           <span class="badge bg-{{ 'success' if progress == 100 else 'warning' }}">
-                               {{ progress }}% Complete
-                           </span>
-                       </div>
-                       <span class="duration">{{ phase.duration }}</span>
-                       
-                       <div class="progress mt-2" style="height: 10px;">
-                           <div class="progress-bar bg-{{ 'success' if progress == 100 else 'primary' }}" 
-                                role="progressbar" 
-                                style="width: {{ progress }}%;" 
-                                aria-valuenow="{{ progress }}" 
-                                aria-valuemin="0" 
-                                aria-valuemax="100">
-                           </div>
-                       </div>
-
-                       <p class="mt-3">{{ phase.description }}</p>
-                       <div class="skills">
-                           {% for skill in phase.skills %}
-                               <span class="skill">{{ skill }}</span>
-                           {% endfor %}
-                       </div>
-                       
-                       <div class="resources">
-                           <h3>Learning Resources:</h3>
-                           {% for category, items in phase.resources.items() %}
-                               <div class="resource-item">
-                                   <div>
-                                       <strong>{{ category }}:</strong>
-                                       {{ items|join(' • ') }}
-                                   </div>
-                               </div>
-                           {% endfor %}
-                       </div>
-
-                       {% if progress < 100 %}
-                           <button onclick="startModule('{{loop.index0}}')" class="btn btn-primary mt-3">
-                               {% if total_days.value > 0 %}Continue Module{% else %}Start Module{% endif %}
-                           </button>
-                       {% else %}
-                           <button class="btn btn-success mt-3" disabled>Completed</button>
-                       {% endif %}
-                   </div>
-               </div>
-           {% endfor %}
-       </div>
-   </div>
-</div>
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
 <style>
-   .container {
-       max-width: 1200px;
-       margin: 0 auto;
-   }
+    /* --- Modern Design System --- */
+    :root {
+        --primary-start: #6366f1;
+        --primary-end: #a78bfa;
+        --primary-gradient: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+        --secondary-gradient: linear-gradient(135deg, #3b82f6, #2dd4bf);
+        
+        --glass-bg: rgba(255, 255, 255, 0.7);
+        --glass-border: rgba(255, 255, 255, 0.5);
+        --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        
+        --timeline-line-width: 6px;
+    }
 
-   .timeline {
-       position: relative;
-       max-width: 1200px;
-       margin: 0 auto;
-   }
+    /* Animated Background */
+    body {
+        background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+        background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%); /* Clean fallback */
+        background-attachment: fixed;
+    }
 
-   .timeline::after {
-       content: '';
-       position: absolute;
-       width: 6px;
-       background-color: #4299e1;
-       top: 0;
-       bottom: 0;
-       left: 50%;
-       margin-left: -3px;
-       border-radius: 3px;
-       animation: growLine 2s ease-out forwards;
-   }
+    .roadmap-container {
+        font-family: 'Inter', sans-serif;
+        padding-bottom: 5rem;
+        position: relative;
+        overflow: hidden; /* Prevent spillover */
+    }
 
-   @keyframes growLine {
-       from { transform: scaleY(0); }
-       to { transform: scaleY(1); }
-   }
+    /* Decorative blurred blobs for background depth */
+    .roadmap-container::before {
+        content: '';
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(0,0,0,0) 70%);
+        top: -100px;
+        left: -200px;
+        z-index: -1;
+        animation: floatBlob 10s infinite alternate;
+    }
+    .roadmap-container::after {
+        content: '';
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(167,139,250,0.15) 0%, rgba(0,0,0,0) 70%);
+        bottom: 0;
+        right: -150px;
+        z-index: -1;
+        animation: floatBlob 10s infinite alternate-reverse;
+    }
 
-   .container-item {
-       padding: 10px 40px;
-       position: relative;
-       width: 50%;
-       opacity: 0;
-       animation: fadeIn 0.5s ease-out forwards;
-   }
+    @keyframes floatBlob {
+        0% { transform: translate(0, 0); }
+        100% { transform: translate(50px, 50px); }
+    }
 
-   @keyframes fadeIn {
-       from {
-           opacity: 0;
-           transform: translateY(20px);
-       }
-       to {
-           opacity: 1;
-           transform: translateY(0);
-       }
-   }
+    /* --- Header --- */
+    .roadmap-header {
+        margin-bottom: 4rem;
+        position: relative;
+        z-index: 2;
+    }
+    .roadmap-header h2 {
+        font-weight: 800;
+        font-size: 3rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1rem;
+        letter-spacing: -1px;
+    }
+    .roadmap-header .lead {
+        font-size: 1.25rem;
+        color: var(--text-muted);
+        max-width: 600px;
+        margin: 0 auto;
+    }
 
-   .container-item:nth-child(odd) { left: 0; }
-   .container-item:nth-child(even) { left: 50%; }
+    /* --- Timeline Core --- */
+    .timeline {
+        position: relative;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px 0;
+    }
 
-   .content {
-       padding: 20px;
-       background-color: white;
-       position: relative;
-       border-radius: 8px;
-       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-       transition: all 0.3s ease;
-   }
+    /* The glowing center line */
+    .timeline::after {
+        content: '';
+        position: absolute;
+        width: var(--timeline-line-width);
+        background: var(--primary-gradient);
+        box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        margin-left: calc(var(--timeline-line-width) / -2);
+        border-radius: 10px;
+        z-index: 0;
+    }
 
-   .content:hover {
-       transform: translateY(-5px);
-       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-   }
+    /* --- Timeline Item Container --- */
+    .container-item {
+        padding: 10px 50px;
+        position: relative;
+        width: 50%;
+        z-index: 1;
+        margin-bottom: 3rem;
+    }
+    
+    .container-item.left { left: 0; text-align: right; }
+    .container-item.right { left: 50%; text-align: left; }
 
-   .content h2 {
-       color: #2b6cb0;
-       margin-bottom: 0.5rem;
-       font-size: 1.5rem;
-   }
+    /* --- Timeline Dot (The Pulsing Node) --- */
+    .timeline-dot {
+        position: absolute;
+        width: 24px;
+        height: 24px;
+        background: white;
+        border: 5px solid #6366f1;
+        border-radius: 50%;
+        top: 35px;
+        z-index: 10;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+        transition: all 0.3s ease;
+    }
 
-   .duration {
-       display: inline-block;
-       background: #4299e1;
-       color: white;
-       padding: 0.25rem 0.75rem;
-       border-radius: 15px;
-       font-size: 0.9rem;
-       margin-bottom: 1rem;
-   }
+    .container-item.left .timeline-dot { right: -12px; }
+    .container-item.right .timeline-dot { left: -12px; }
 
-   .progress {
-       background-color: #e9ecef;
-       border-radius: 0.25rem;
-   }
+    .container-item:hover .timeline-dot {
+        transform: scale(1.3);
+        box-shadow: 0 0 0 8px rgba(99, 102, 241, 0.1);
+        border-color: #a78bfa;
+    }
 
-   .progress-bar {
-       transition: width 0.6s ease;
-   }
+    /* --- Content Card (Glassmorphism) --- */
+    .content {
+        padding: 2rem;
+        background: var(--glass-bg);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        box-shadow: var(--glass-shadow);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+    }
 
-   .skills {
-       display: flex;
-       flex-wrap: wrap;
-       gap: 0.5rem;
-       margin-top: 1rem;
-   }
+    .container-item.left .content { border-radius: 20px 0 20px 20px; }
+    .container-item.right .content { border-radius: 0 20px 20px 20px; }
 
-   .skill {
-       background: #ebf4ff;
-       padding: 0.5rem 1rem;
-       border-radius: 20px;
-       font-size: 0.9rem;
-       color: #4a5568;
-   }
+    /* Hover effect for card */
+    .content:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        border-color: rgba(99, 102, 241, 0.3);
+    }
 
-   .resources {
-       margin-top: 1rem;
-       padding-top: 1rem;
-       border-top: 1px solid #e2e8f0;
-   }
+    /* Card Content Styling */
+    .content h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0;
+    }
 
-   .resource-item {
-       margin-bottom: 0.5rem;
-       padding: 0.5rem;
-       background: #f7fafc;
-       border-radius: 4px;
-   }
+    .duration {
+        display: inline-block;
+        background: #f1f5f9;
+        color: var(--text-muted);
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        border: 1px solid #e2e8f0;
+    }
 
-   .container-item:nth-child(1) { animation-delay: 0.2s; }
-   .container-item:nth-child(2) { animation-delay: 0.4s; }
-   .container-item:nth-child(3) { animation-delay: 0.6s; }
-   .container-item:nth-child(4) { animation-delay: 0.8s; }
+    /* Progress Bar */
+    .progress {
+        height: 10px;
+        background: #e2e8f0;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 1rem 0;
+    }
+    
+    .progress-bar {
+        background-image: var(--primary-gradient);
+        position: relative;
+    }
+    
+    /* Shimmer effect on progress bar */
+    .progress-bar::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; bottom: 0; right: 0;
+        background: linear-gradient(
+            45deg,
+            rgba(255,255,255,0.15) 25%, 
+            transparent 25%, 
+            transparent 50%, 
+            rgba(255,255,255,0.15) 50%, 
+            rgba(255,255,255,0.15) 75%, 
+            transparent 75%, 
+            transparent
+        );
+        background-size: 1rem 1rem;
+        animation: progressShimmer 1s linear infinite;
+    }
 
-   @media (max-width: 768px) {
-       .timeline::after { left: 31px; }
-       .container-item { width: 100%; left: 0; }
-       .content { margin: 0 0 0 70px; }
-   }
+    @keyframes progressShimmer {
+        from { background-position: 0 0; }
+        to { background-position: 1rem 1rem; }
+    }
+
+    .progress-bar.bg-success {
+        background-image: linear-gradient(135deg, #10b981, #34d399);
+    }
+
+    .description {
+        color: var(--text-muted);
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+
+    /* Badges */
+    .progress-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+    .bg-warning-light { background: #fff7ed; color: #ea580c; border: 1px solid #ffedd5; }
+    .bg-success-light { background: #ecfdf5; color: #059669; border: 1px solid #d1fae5; }
+
+    /* Skills & Resources */
+    .skills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 1.5rem;
+        justify-content: inherit; /* Aligns based on parent text-align */
+    }
+
+    .skill {
+        background: linear-gradient(135deg, #eff6ff, #dbeafe);
+        color: #2563eb;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border: 1px solid #bfdbfe;
+        transition: transform 0.2s;
+    }
+    .skill:hover { transform: translateY(-2px); }
+
+    .resources {
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px dashed #e2e8f0;
+        text-align: left; /* Always left align resources for readability */
+    }
+
+    .resources h3 {
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        color: #94a3b8;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        letter-spacing: 0.5px;
+    }
+
+    .resource-item {
+        background: #f8fafc;
+        border-radius: 8px;
+        padding: 8px 12px;
+        margin-bottom: 5px;
+        font-size: 0.9rem;
+        border-left: 3px solid #6366f1;
+    }
+
+    /* Buttons */
+    .btn-modern {
+        background-image: var(--primary-gradient);
+        color: white;
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        margin-top: 1.5rem;
+        width: 100%;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-modern:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+        color: white;
+    }
+
+    .btn-modern::after {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%;
+        width: 100%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: 0.5s;
+    }
+    .btn-modern:hover::after { left: 100%; }
+
+    .btn-completed {
+        background: #ecfdf5;
+        color: #059669;
+        border: 1px solid #10b981;
+        width: 100%;
+        padding: 0.8rem;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: default;
+    }
+
+    /* --- Responsive Mobile Design --- */
+    @media (max-width: 768px) {
+        .timeline::after { left: 31px; }
+        
+        .container-item {
+            width: 100%;
+            padding-left: 70px;
+            padding-right: 25px;
+            text-align: left; /* Reset text align */
+        }
+        
+        .container-item.left, .container-item.right { left: 0; }
+        
+        /* Reset Border Radius for Mobile */
+        .container-item.left .content, .container-item.right .content {
+            border-radius: 20px;
+        }
+
+        .timeline-dot { left: 19px; } /* Center on line */
+        .container-item.left .timeline-dot, .container-item.right .timeline-dot {
+            left: 19px;
+            right: auto;
+        }
+
+        .roadmap-header h2 { font-size: 2rem; }
+        
+        .skills { justify-content: flex-start; }
+    }
 </style>
 
+<div class="container my-5 roadmap-container">
+    <div class="row">
+        <div class="col-md-12 text-center roadmap-header" data-aos="fade-down" data-aos-duration="1000">
+            <h2>Hey <strong>{{ user.name }}</strong>, buckle up! 🚀</h2>
+            <p class="lead">Here comes your epic roadmap to success. Ready? Let's go!</p>
+        </div>
+
+        <div class="timeline">
+            {% for phase in roadmap_data.phases %}
+                {% set total_days = namespace(value=0) %}
+                {% set completed_days = namespace(value=0) %}
+                
+                {% if phase.get('learning_plan') %}
+                    {% for week in phase.learning_plan.weekly_schedule %}
+                        {% for task in week.daily_tasks %}
+                            {% set total_days.value = total_days.value + 1 %}
+                            {% if task.completed %}
+                                {% set completed_days.value = completed_days.value + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                {% endif %}
+
+                {% set progress = (completed_days.value / total_days.value * 100)|round if total_days.value > 0 else 0 %}
+                
+                <div class="container-item {% if loop.index % 2 == 0 %}right{% else %}left{% endif %}"
+                     data-aos="{% if loop.index % 2 == 0 %}fade-left{% else %}fade-right{% endif %}"
+                     data-aos-offset="100"
+                     data-aos-delay="{{ loop.index0 * 100 }}"> <div class="timeline-dot"></div>
+                    
+                    <div class="content">
+                        <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-2">
+                            <h2>{{ phase.name }}</h2>
+                            <span class="badge progress-badge bg-{{ 'success-light' if progress == 100 else 'warning-light' }}">
+                                {{ progress }}% Complete
+                            </span>
+                        </div>
+                        
+                        <span class="duration"><i class="far fa-clock me-1"></i> {{ phase.duration }}</span>
+                        
+                        <div class="progress mt-2">
+                            <div class="progress-bar {% if progress == 100 %}bg-success{% endif %}" 
+                                 role="progressbar" 
+                                 style="width: {{ progress }}%;" 
+                                 aria-valuenow="{{ progress }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                            </div>
+                        </div>
+
+                        <p class="mt-3 description">{{ phase.description }}</p>
+                        
+                        <div class="skills">
+                            {% for skill in phase.skills %}
+                                <span class="skill"><i class="fas fa-bolt me-1"></i> {{ skill }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="resources">
+                            <h3><i class="fas fa-book-reader me-2"></i> Learning Resources</h3>
+                            {% for category, items in phase.resources.items() %}
+                                <div class="resource-item">
+                                    <strong>{{ category }}:</strong>
+                                    <span class="text-muted">{{ items|join(' • ') }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        {% if progress < 100 %}
+                            <button onclick="startModule('{{loop.index0}}')" class="btn btn-modern">
+                                <i class="fas fa-play-circle me-2"></i> 
+                                {% if total_days.value > 0 %}Continue Module{% else %}Start Module{% endif %}
+                            </button>
+                        {% else %}
+                            <button class="btn btn-completed mt-3" disabled>
+                                <i class="fas fa-check-circle me-2"></i> Module Completed
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
 <script>
-   function startModule(phaseId) {
-       fetch(`/generate-plan/${phaseId}`, {
-           method: 'POST',
-           credentials: 'same-origin',
-           headers: {
-               'Content-Type': 'application/json'
-           }
-       })
-       .then(response => response.json())
-       .then(data => {
-           if(data.status === 'success') {
-               window.location.href = `/learning-plan/${phaseId}`;
-           } else if(data.status === 'exists') {
-               window.location.href = `/learning-plan/${phaseId}`;
-           } else {
-               alert('Error: ' + data.message);
-           }
-       })
-       .catch(error => {
-           console.error("Error:", error);
-           alert('Error: ' + error);
-       });
-   }
+    // Initialize Animate On Scroll Library
+    AOS.init({
+        once: true, // Animation happens only once while scrolling down
+        duration: 800, // Animation duration in ms
+        easing: 'ease-out-cubic',
+    });
+
+    function startModule(phaseId) {
+        // Add a temporary loading state to the button clicked
+        const btn = event.currentTarget;
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+        btn.style.opacity = '0.8';
+
+        fetch(`/generate-plan/${phaseId}`, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.status === 'success' || data.status === 'exists') {
+                window.location.href = `/learning-plan/${phaseId}`;
+            } else {
+                alert('Error: ' + data.message);
+                btn.innerHTML = originalContent; // Revert on error
+                btn.style.opacity = '1';
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert('Error: ' + error);
+            btn.innerHTML = originalContent;
+            btn.style.opacity = '1';
+        });
+    }
 </script>
 {% endblock %}

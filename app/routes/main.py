@@ -5,6 +5,7 @@ import json
 import os
 from app.utils.db_utils import get_user_by_id
 from app.utils.llm_utils import get_roadmap_from_groq
+from app.utils.linkedin import fetch_linkedin_profile_brightdata
 
 # Main blueprint
 main_bp = Blueprint('main_bp', __name__)
@@ -128,53 +129,62 @@ def student_profile():
         if not existing_profile:
             return "Profile not found", 404
 
-        # Check if key fields were updated
+        # ------------------------------------------------------------------
+        # 1. Detect if any *important* field changed → wipe active modules
+        # ------------------------------------------------------------------
         key_fields = ['career_goal', 'dream_company', 'personal_statement', 'company_preference']
         key_fields_updated = any(
             request.form.get(field, '').strip() != existing_profile.get(field, '')
             for field in key_fields
         )
 
+        # ------------------------------------------------------------------
+        # 2. Build the update dict (keep empty strings → existing value)
+        # ------------------------------------------------------------------
         updated_profile = {
-            key: value.strip() if value.strip() else existing_profile.get(key, '')
+            key: (value.strip() if value.strip() else existing_profile.get(key, ''))
             for key, value in request.form.items() if key != 'user_id'
         }
 
-        # Fetch LinkedIn data
-        linkedin_profile = existing_profile.get('linkedinProfile')
-        if linkedin_profile:
-            linkedin_data = linkedin_data_collection.find_one({"user_id": user_id})
-            if linkedin_data:
-                updated_profile['linkedin_data'] = {
-                    "name": f"{linkedin_data.get('firstName', '')} {linkedin_data.get('lastName', '')}",
-                    "headline": linkedin_data.get("headline", ""),
-                    "summary": linkedin_data.get("summary", ""),
-                    "skills": linkedin_data.get("skills", []),
-                    "educations": linkedin_data.get("educations", []),
-                    "positions": linkedin_data.get("fullPositions", []),
-                    "certifications": linkedin_data.get("certifications", []),
-                    "languages": linkedin_data.get("languages", []),
-                }
+        # ------------------------------------------------------------------
+        # 3. LinkedIn URL handling
+        # ------------------------------------------------------------------
+        linkedin_url = updated_profile.get('linkedinProfile')
+        if linkedin_url:
+            # ---- CALL BRIGHT DATA ----
+            bright_result = fetch_linkedin_profile_brightdata(linkedin_url, user_id)
+            if bright_result.get("status") != "success":
+                flash(f"LinkedIn fetch failed: {bright_result.get('message')}", "warning")
+            else:
+                linkedin_raw = linkedin_data_collection.find_one({"user_id": user_id})
+                if linkedin_raw:
+                    updated_profile['linkedin_data'] = {
+                        "name": f"{linkedin_raw.get('first_name','')} {linkedin_raw.get('last_name','')}".strip(),
+                        "headline": linkedin_raw.get("position", ""),
+                        "summary": linkedin_raw.get("about", ""),
+                        "skills": linkedin_raw.get("skills", []),
+                        "educations": linkedin_raw.get("education", []),
+                        "positions": linkedin_raw.get("experience", []),
+                        "certifications": linkedin_raw.get("certifications", []),
+                        "languages": linkedin_raw.get("languages", []),
+                    }
 
         try:
             desired_role = updated_profile.get('career_goal', 'Software Developer')
             roadmap_data = get_roadmap_from_groq(desired_role)
             updated_profile['road_map'] = json.dumps(roadmap_data)
 
-            update_operation = {"$set": updated_profile}
+            update_op = {"$set": updated_profile}
             if key_fields_updated:
-                update_operation["$unset"] = {"active_modules": ""}
+                update_op["$unset"] = {"active_modules": ""}
 
-            user_collection.update_one(
-                {"user_id": user_id}, 
-                update_operation
-            )
+            user_collection.update_one({"user_id": user_id}, update_op)
+            flash("Profile updated successfully!", "success")
             return redirect(url_for('main_bp.student_profile'))
 
         except Exception as e:
-            print(f"Error generating roadmap: {str(e)}")
-            flash("Error updating profile. Please try again.")
+            flash(f"Error updating profile: {e}", "danger")
             return redirect(url_for('main_bp.student_profile'))
 
-    profile = user_collection.find_one({"user_id": session['user_id']}) or {}
+    profile = user_collection.find_one({"user_id": session["user_id"]}) or {}
     return render_template('student_profile.html', profile=profile, user=profile)

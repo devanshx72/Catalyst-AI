@@ -1,8 +1,9 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, render_template, request, redirect, url_for, session
 from datetime import datetime
 from markdown2 import Markdown
-from app.utils.llm_utils import get_gemini_response, fetch_linkedin_profile, fetch_github_projects
+from app.utils.llm_utils import get_mistral_response, fetch_github_projects
 from app.utils.db_utils import get_db, get_user_by_id
+from app.utils.linkedin import fetch_linkedin_profile_brightdata
 
 # Initialize markdown converter
 markdowner = Markdown()
@@ -11,172 +12,212 @@ markdowner = Markdown()
 career_coach_bp = Blueprint('career_coach_bp', __name__)
 
 def generate_prompt(user_data, user_query, chat_history):
-    """Generate a conversational prompt including chat history and GitHub projects."""
-    
-    # Extract user data
-    name = f"{user_data.get('firstName', 'there')} {user_data.get('lastName', '')}".strip()
-    headline = user_data.get("headline", "No headline available")
-    summary = user_data.get("summary", "No summary available")
-    certifications = user_data.get("certifications", [])
-    skills = user_data.get("skills", [])
-    projects = user_data.get("projects", {}).get("items", [])
-    honors = user_data.get("honors", [])
-    geo = user_data.get("geo", {}).get("full", "Location not specified")
-    github_username = user_data.get("github_username", None)
-    
-    # Process certifications
-    certifications_str = []
-    for cert in certifications:
-        cert_name = cert.get("name", "Unnamed Certification")
-        cert_authority = cert.get("authority", "Unknown Authority")
-        cert_company = cert.get("company", {}).get("name", "Unknown Company")
-        cert_time = f"{cert.get('start', {}).get('year', 'Unknown Start Year')} - {cert.get('end', {}).get('year', 'Unknown End Year')}"
-        certifications_str.append(f"{cert_name} ({cert_authority} - {cert_company} - {cert_time})")
-    
-    certifications_str = ', '.join(certifications_str) if certifications_str else 'None'
-    
-    # Process honors
-    honors_str = []
-    for honor in honors:
-        honor_title = honor.get("title", "Unknown Honor")
-        honor_description = honor.get("description", "No description available")
-        honor_issuer = honor.get("issuer", "Unknown Issuer")
-        honor_time = f"{honor.get('issuedOn', {}).get('year', 'Unknown Year')}"
-        honors_str.append(f"{honor_title} - {honor_description} (Issued by {honor_issuer} in {honor_time})")
-    
-    honors_str = ', '.join(honors_str) if honors_str else 'None'
-    
-    # Handle skills to ensure they are strings
-    skills_str = ', '.join([skill.get("name", "Unknown Skill") for skill in skills]) if skills else 'None'
-
-    # Handle projects to ensure they are strings
-    projects_str = ', '.join([proj.get("title", "Unknown Project") for proj in projects]) if projects else 'None'
-
-    # Fetch GitHub projects if a GitHub username exists
-    github_projects_str = "None"
-    if github_username:
-        github_projects = fetch_github_projects(github_username)
-        github_projects_str = ', '.join([f"{proj['title']}: {proj['description']}" for proj in github_projects]) if isinstance(github_projects, list) else github_projects
-
-    # Build the history string, ensuring each entry is valid
-    history_str = "\n".join([f"User: {entry.get('prompt', '')}\nBot: {entry.get('raw_response', '')}" 
-                            for entry in chat_history if isinstance(entry, dict) and 'prompt' in entry and ('response' in entry or 'raw_response' in entry)])
-
-    # Create the new prompt
-    prompt = f"""
-    You are a helpful assistant responding in a friendly and conversational tone. 
-    The user's profile contains the following:
-    - Name: {name}
-    - Headline: {headline}
-    - Summary: {summary}
-    - Location: {geo}
-    - Certifications: {certifications_str if certifications else 'None'}
-    - Skills: {skills_str if skills else 'None'}
-    - Projects (LinkedIn): {projects_str if projects else 'None'}
-    - Honors: {honors_str if honors else 'None'}
-
-    Chat history:
-    {history_str}
-
-    User Question: "{user_query}"
-
-    Respond in a friendly and concise manner:
-    - Continue the conversation based on the chat history and user profile.
-    - Keep responses brief and focused while maintaining context.
     """
-    return prompt
+    Generates a context-aware prompt for the LLM using LinkedIn data.
+    """
+    # === 1. Personal Info ===
+    # Fallback to "User" if name is missing
+    full_name = user_data.get("name", "User")
+    first_name = full_name.split()[0] if full_name else "User"
+    headline = user_data.get("position", "Student")
+    about_summary = user_data.get("about", "No summary provided.")
+
+    # === 2. Skills / Interests ===
+    # In our DB schema, 'interests' holds the skills/languages from LinkedIn
+    skills = user_data.get("interests", [])
+    if not skills:
+        # Fallback to manual key_interests if LinkedIn skills are empty
+        skills = user_data.get("key_interests", [])
+    
+    skills_str = ', '.join(skills[:15]) if skills else 'None listed'
+
+    # === 3. Experience ===
+    # Format the first 3 experiences
+    experiences = user_data.get("experiences", [])
+    experience_list = []
+    for exp in experiences[:3]:
+        title = exp.get('title', 'Role')
+        company = exp.get('company', 'Company')
+        duration = exp.get('duration', '')
+        # Add to list string
+        experience_list.append(f"- {title} at {company} ({duration})")
+    
+    exp_str = "\n".join(experience_list) if experience_list else "No experience listed."
+
+    # === 4. Education ===
+    # Format the first 2 education entries
+    educations = user_data.get("education", [])
+    education_list = []
+    for edu in educations[:2]:
+        school = edu.get('institution', 'University')
+        degree = edu.get('degree', 'Degree')
+        major = edu.get('description', '')
+        education_list.append(f"- {degree} in {major} from {school}")
+    
+    edu_str = "\n".join(education_list) if education_list else "No education listed."
+
+    # === 5. Chat History (Last 3 interactions for context) ===
+    recent_history = chat_history[-3:]
+    history_str = ""
+    for msg in recent_history:
+        if isinstance(msg, dict):
+            history_str += f"User: {msg.get('prompt', '')}\nLeo: {msg.get('raw_response', '')}\n"
+
+    if not history_str:
+        history_str = "No previous conversation."
+
+    # === FINAL PROMPT CONSTRUCTION ===
+    return f"""
+        You are Leo, a professional and encouraging Career Coach AI.
+        
+        === USER PROFILE ===
+        Name: {full_name}
+        Headline: {headline}
+        Summary: {about_summary}
+        
+        TOP SKILLS:
+        {skills_str}
+        
+        EXPERIENCE:
+        {exp_str}
+        
+        EDUCATION:
+        {edu_str}
+        
+        === CONVERSATION HISTORY ===
+        {history_str}
+        
+        === USER QUESTION ===
+        "{user_query}"
+        
+        === INSTRUCTIONS ===
+        1. Address the user as "{first_name}".
+        2. Answer the user's question specifically based on their profile data above.
+        3. If they ask about jobs, suggest roles that fit their Experience and Skills.
+        4. Be concise (max 3 short paragraphs).
+        5. Use a warm, professional, and motivating tone.
+        6. Use formatting (bullet points, bold text) where helpful.
+        """.strip()
 
 @career_coach_bp.route('/your-career_coach-leo011', methods=['POST', 'GET'])
 def career_coach():
-    if "user_id" in session:
-        db = get_db()
-        leo_chat_history = db.career_coach
-        students_collection = db.linkedin_data
+    if "user_id" not in session:
+        return redirect(url_for("auth_bp.sign_in"))
+
+    db = get_db()
+    leo_chat_history = db.career_coach
+    linkedin_coll = db.linkedin_data
+
+    if request.method == 'POST':
+        user_id = session['user_id']
+        user_query = request.form['userQuery']
+
+        # --------------------------------------------------------------
+        # 1. Get Basic User Record (for fallback)
+        # --------------------------------------------------------------
+        user_record = get_user_by_id(user_id)
+        linkedin_url = user_record.get('linkedinProfile')
         
-        if request.method == 'POST':
-            user_id = session['user_id']
-            user_query = request.form['userQuery']
-            
-            user_record = get_user_by_id(user_id)
-            linkedin_url = user_record.get('linkedinProfile') if user_record else None
-            
-            # Fetch user data from MongoDB
-            if linkedin_url:
-                fetch_linkedin_profile(linkedin_url, user_id)
-            else:
-                flash("LinkedIn profile URL not found. Please update your profile.")
-                return redirect(url_for('main_bp.student_profile'))
-                
-            user_data = students_collection.find_one({"user_id": user_id})
-            if not user_data:
-                flash("User data not found. Please update your profile.")
-                return redirect(url_for('main_bp.student_profile'))
+        # --------------------------------------------------------------
+        # 2. Trigger Scrape if LinkedIn URL exists (Lazy Update)
+        # --------------------------------------------------------------
+        if linkedin_url:
+            try:
+                # This checks cache age internally, so it's safe to call every time
+                fetch_linkedin_profile_brightdata(linkedin_url, user_id)
+            except Exception as e:
+                print(f"[Leo] LinkedIn fetch warning: {e}")
 
-            # Generate prompt and get response
-            existing_conversation = leo_chat_history.find_one({"user_id": user_id})
-            chat_history = existing_conversation.get("messages", []) if existing_conversation else []
-            
-            prompt = generate_prompt(user_data, user_query, chat_history)
-            response = get_gemini_response(prompt, 300)
-            
-            # Convert markdown response to HTML
-            html_response = markdowner.convert(response)
+        # --------------------------------------------------------------
+        # 3. Load Rich Data from DB
+        # --------------------------------------------------------------
+        # Try to get the rich scraped data first
+        rich_user_data = linkedin_coll.find_one({"user_id": user_id})
+        
+        # If no scraped data, fall back to basic sign-up data
+        if not rich_user_data:
+            rich_user_data = user_record or {}
+            # Normalize keys to match generate_prompt expectations
+            rich_user_data["experiences"] = []
+            rich_user_data["education"] = []
+            rich_user_data["interests"] = rich_user_data.get("key_interests", [])
 
-            if not existing_conversation:
-                conversation_id = f"conv_{str(datetime.now().timestamp()).replace('.', '')}"
-                new_conversation = {
-                    "user_id": user_id,
-                    "conversation_id": conversation_id,
-                    "messages": [
-                        {
-                            "prompt": user_query,
-                            "response": html_response,
-                            "raw_response": response,
-                            "time": datetime.utcnow(),
-                        },
-                    ]
-                }
-                leo_chat_history.insert_one(new_conversation)
-                updated_messages = new_conversation["messages"]
-            else:
-                updated_messages = sorted(
-                    [
-                        {
-                            "prompt": msg["prompt"], 
-                            "response": msg.get("response", markdowner.convert(msg.get("raw_response", ""))),
-                            "time": msg["time"]
-                        }
-                        for msg in existing_conversation["messages"]
-                    ] + [{
-                        "prompt": user_query, 
-                        "response": html_response,
-                        "raw_response": response,
-                        "time": datetime.utcnow()
-                    }],
-                    key=lambda x: x["time"]
-                )
+        # --------------------------------------------------------------
+        # 4. Get Chat History
+        # --------------------------------------------------------------
+        conv = leo_chat_history.find_one({"user_id": user_id})
+        chat_history = conv.get("messages", []) if conv else []
 
-                leo_chat_history.update_one(
-                    {"user_id": user_id},
-                    {"$set": {"messages": updated_messages}}
-                )
+        # --------------------------------------------------------------
+        # 5. Generate AI Response
+        # --------------------------------------------------------------
+        try:
+            prompt = generate_prompt(rich_user_data, user_query, chat_history)
+            raw_resp = get_mistral_response(prompt, tokens=400)
 
-            return render_template(
-                "career_coach.html", 
-                messages=updated_messages
-            )
+            # Convert Markdown to HTML for display
+            html_resp = markdowner.convert(raw_resp)
+        except Exception as e:
+            print(f"[Leo] LLM Error: {e}")
+            first_name = rich_user_data.get("name", "there").split()[0]
+            raw_resp = f"I'm sorry {first_name}, I'm having trouble thinking right now. Could you ask that again?"
+            html_resp = markdowner.convert(raw_resp)
 
-        # GET request: load existing conversation
-        existing_conversation = leo_chat_history.find_one({"user_id": session["user_id"]})
-        if existing_conversation:
-            messages = [{
-                "prompt": msg["prompt"],
-                "response": msg.get("response", markdowner.convert(msg.get("raw_response", ""))),
-                "time": msg["time"]
-            } for msg in existing_conversation["messages"]]
+        # --------------------------------------------------------------
+        # 6. Save Conversation
+        # --------------------------------------------------------------
+        new_msg = {
+            "prompt": user_query,
+            "response": html_resp,
+            "raw_response": raw_resp,
+            "time": datetime.utcnow(),
+        }
+
+        if not conv:
+            conv_id = f"conv_{int(datetime.now().timestamp())}"
+            leo_chat_history.insert_one({
+                "user_id": user_id,
+                "conversation_id": conv_id,
+                "messages": [new_msg],
+            })
+            messages = [new_msg]
         else:
-            messages = []
-            
+            # Append new message
+            leo_chat_history.update_one(
+                {"user_id": user_id},
+                {"$push": {"messages": new_msg}}
+            )
+            # Fetch updated list for rendering
+            updated_conv = leo_chat_history.find_one({"user_id": user_id})
+            messages = updated_conv.get("messages", [])
+
         return render_template("career_coach.html", messages=messages)
-    
-    return redirect(url_for("auth_bp.sign_in"))
+
+    # GET route - Display history
+    conv = leo_chat_history.find_one({"user_id": session["user_id"]})
+    messages = conv.get("messages", []) if conv else []
+
+    return render_template("career_coach.html", messages=messages)
+
+
+@career_coach_bp.route('/your-career_coach-leo011/clear', methods=['POST'])
+def clear_chat():
+    """
+    Clears the user's saved Leo chat history.
+    """
+    if "user_id" not in session:
+        return redirect(url_for("auth_bp.sign_in"))
+
+    db = get_db()
+    leo_chat_history = db.career_coach
+    user_id = session['user_id']
+
+    try:
+        # Remove the conversation document for this user (clean slate).
+        leo_chat_history.delete_one({"user_id": user_id})
+    except Exception as e:
+        # Log but continue — do not reveal internal error to user
+        print(f"[Leo] Error clearing chat for user {user_id}: {e}")
+
+    # Redirect back to the main career coach page which will render empty history
+    return redirect(url_for('career_coach_bp.career_coach'))

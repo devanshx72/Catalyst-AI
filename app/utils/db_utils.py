@@ -11,7 +11,7 @@ load_dotenv()
 
 # MongoDB connection
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
-DB_NAME = os.getenv("DB_NAME", "Catalyst-AI-db")
+DB_NAME = os.getenv("DB_NAME", "catalyst_ai_db")
 
 # MongoDB client initialization
 def get_db():
