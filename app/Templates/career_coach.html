@@ -8,6 +8,9 @@ Your Career Coach - Leo 🦁
 <!-- AOS Animation Library -->
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <style>
   /* --- Modern Variables & Theming --- */
   :root {
@@ -391,13 +394,12 @@ Your Career Coach - Leo 🦁
     <!-- Header -->
     <div class="chat-header" data-aos="fade-down">
       <div class="header-actions" data-aos="fade-left" data-aos-delay="50">
-        <!-- Clear Chat Form -->
-        <form id="clear-chat-form" method="post" action="/your-career_coach-leo011/clear"
-          onsubmit="return confirm('Clear entire chat history? This cannot be undone.');">
-          <button type="submit" class="btn-clear" title="Clear chat history">
-            <i class="fas fa-trash"></i> Clear Chat
-          </button>
-        </form>
+
+        <!-- Clear Chat Button -->
+        <button id="clearChatBtn" class="btn-clear" title="Clear chat history">
+          <i class="fas fa-trash"></i> Clear Chat
+        </button>
+
       </div>
 
       <h2>Hey Voyager 🌍, I’m <span class="highlight">Leo</span> 🦁</h2>
@@ -423,24 +425,18 @@ Your Career Coach - Leo 🦁
 
         <!-- Message Loop -->
         {% for message in messages %}
-        <!-- User Message -->
         <div class="message-row user">
           <div class="avatar user"><i class="fas fa-user"></i></div>
-          <div class="chat-bubble">
-            {{ message.prompt }}
-          </div>
+          <div class="chat-bubble">{{ message.prompt }}</div>
         </div>
 
-        <!-- Bot Message -->
         <div class="message-row bot">
           <div class="avatar bot">🦁</div>
-          <div class="chat-bubble">
-            {{ message.response|safe }}
-          </div>
+          <div class="chat-bubble">{{ message.response|safe }}</div>
         </div>
         {% endfor %}
 
-        <!-- Typing Indicator Place holder -->
+        <!-- Typing Indicator -->
         <div id="typing-indicator">
           Leo is thinking... <i class="fas fa-pen-nib"></i>
         </div>
@@ -466,8 +462,31 @@ Your Career Coach - Leo 🦁
 
 <!-- AOS Script -->
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
 <script>
   AOS.init({ duration: 800, once: true });
+
+  // SWEETALERT POPUP FOR CLEAR CHAT
+  document.getElementById('clearChatBtn').addEventListener('click', function () {
+    Swal.fire({
+      title: 'Clear all chat history?',
+      text: 'This action cannot be undone.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#6366f1',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, clear it',
+      backdrop: true
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/your-career_coach-leo011/clear';
+        document.body.appendChild(form);
+        form.submit();
+      }
+    });
+  });
 
   document.addEventListener('DOMContentLoaded', function () {
     const chatBody = document.getElementById('chat-body');
@@ -475,37 +494,31 @@ Your Career Coach - Leo 🦁
     const form = document.getElementById('chat-form');
     const typingIndicator = document.getElementById('typing-indicator');
 
-    // 1. Auto-scroll to bottom
     function scrollToBottom() {
       chatBody.scrollTop = chatBody.scrollHeight;
     }
     scrollToBottom();
 
-    // 2. Auto-resize textarea
     textarea.addEventListener('input', function () {
       this.style.height = 'auto';
       this.style.height = (this.scrollHeight) + 'px';
-      if (this.value === '') this.style.height = 'auto';
     });
 
-    // 3. Handle Submit
     form.addEventListener('submit', function () {
-      // Show typing indicator immediately
       typingIndicator.style.display = 'block';
       scrollToBottom();
-      // Allow form to submit normally (page reload)
     });
 
-    // 4. Handle Enter Key
     textarea.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         if (this.value.trim() !== "") {
-          form.dispatchEvent(new Event('submit')); // Trigger submit event logic
-          form.submit(); // Actually submit
+          form.dispatchEvent(new Event('submit'));
+          form.submit();
         }
       }
     });
   });
 </script>
+
 {% endblock %}
