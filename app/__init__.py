@@ -7,6 +7,12 @@ def create_app(test_config=None):
     template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'templates'))
     static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'static'))
     
+    print(f"DEBUG: template_dir = {template_dir}")
+    if os.path.exists(template_dir):
+        print(f"DEBUG: template_dir exists. Contents: {os.listdir(template_dir)}")
+    else:
+        print(f"DEBUG: template_dir does NOT exist.")
+        
     app = Flask(__name__, instance_relative_config=True, template_folder=template_dir, static_folder=static_dir)
     
     # Set up configuration
