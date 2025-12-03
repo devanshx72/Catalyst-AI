@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 import os
 
 def create_app(test_config=None):
@@ -31,5 +31,10 @@ def create_app(test_config=None):
     app.register_blueprint(roadmap_bp)
     app.register_blueprint(career_coach_bp)
     app.register_blueprint(tutor_bp)  # Register the new tutor blueprint
+    
+    # Register error handlers
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return render_template('404.html'), 404
     
     return app

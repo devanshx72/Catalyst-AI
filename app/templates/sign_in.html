@@ -5,27 +5,55 @@ Sign In - (Catalyst AI)
 {% endblock %}
 
 {% block content %}
-<div class="jumbotron text-center py-5">
-    <h1 class="display-4">Welcome to Catalyst AI</h1>
-    <p class="lead mb-0">AI-Driven Career Readiness Platform.</p>
 
-    <!-- Error Message -->
-    {% if message %}
-    <div class="alert alert-danger text-center" role="alert">
-        {{ message }}
+<style>
+    .auth-hero {
+        background: linear-gradient(135deg, #28a745 0%, #6ccf6f 100%);
+        border-radius: 12px;
+        color: white;
+    }
+    .auth-card {
+        border-radius: 16px !important;
+        backdrop-filter: blur(8px);
+    }
+    .input-group-text {
+        background-color: #f6fff7;
+    }
+    .form-control:focus {
+        border-color: #28a745;
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+    }
+    .btn-success {
+        border-radius: 8px;
+        padding: 10px;
+        font-size: 16px;
+    }
+    .auth-link:hover {
+        text-decoration: underline !important;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="auth-hero text-center py-5 shadow-sm">
+        <h1 class="display-5 fw-bold">Welcome to Catalyst AI</h1>
+        <p class="lead mb-0">AI-Driven Career Readiness Platform</p>
+
+        {% if message %}
+        <div class="alert alert-danger text-center mt-3" role="alert">
+            {{ message }}
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
-</div>
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-header text-center bg-success-subtle">
-                    <h4 class="text-dark">Login to your Account</h4>
-                </div>
-                <div class="card-body">
 
-                    <!-- Error Message -->
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-5">
+            <div class="card shadow-lg auth-card">
+                <div class="card-header text-center bg-success-subtle">
+                    <h4 class="text-dark m-2">Login to your Account</h4>
+                </div>
+
+                <div class="card-body p-4">
+
                     {% if error %}
                     <div class="alert alert-danger text-center" role="alert">
                         {{ error }}
@@ -33,38 +61,38 @@ Sign In - (Catalyst AI)
                     {% endif %}
 
                     <form action="/sign_in" method="post">
-                        
-                        <!-- Username / Email -->
-                        <div class="mb-3 position-relative">
-                            <label for="username" class="form-label">Username / Email</label>
+
+                        <!-- Username -->
+                        <div class="mb-3">
+                            <label for="username" class="form-label fw-semibold">Username / Email</label>
                             <div class="input-group">
-                                <div class="input-group-text">
-                                    <i class="fas fa-user"></i>  <!-- User Icon -->
-                                </div>
-                                <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username / Email" required>
+                                <div class="input-group-text"><i class="fas fa-user"></i></div>
+                                <input type="text" class="form-control"
+                                    id="username" name="username"
+                                    placeholder="Enter your username/email" required>
                             </div>
                         </div>
 
                         <!-- Password -->
-                        <div class="mb-3 position-relative">
-                            <label for="password" class="form-label">Password</label>
+                        <div class="mb-3">
+                            <label for="password" class="form-label fw-semibold">Password</label>
                             <div class="input-group">
-                                <div class="input-group-text">
-                                    <i class="fas fa-key"></i> <!-- Key Icon -->
-                                </div>
-                                <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+                                <div class="input-group-text"><i class="fas fa-key"></i></div>
+                                <input type="password" class="form-control"
+                                    id="password" name="password"
+                                    placeholder="Enter your password" required>
                             </div>
                         </div>
 
-                        <!-- Submit Button -->
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-success">Login</button>
-                        </div>
+                        <!-- Button -->
+                        <button type="submit" class="btn btn-success w-100 mt-2">Login</button>
                     </form>
                 </div>
-                <div class="card-footer text-center">
+
+                <div class="card-footer text-center bg-light py-3">
                     <small class="text-muted">
-                        Don’t have an account? <a href='/sign_up' class='text-decoration-none'>Sign up here</a>.
+                        Don't have an account?
+                        <a href="/sign_up" class="text-decoration-none auth-link">Sign up here</a>.
                     </small>
                 </div>
             </div>
