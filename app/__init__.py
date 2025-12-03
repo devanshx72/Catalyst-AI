@@ -3,7 +3,11 @@ import os
 
 def create_app(test_config=None):
     """Create and configure the Flask application"""
-    app = Flask(__name__, instance_relative_config=True)
+    # Explicitly set the template folder path
+    template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'templates'))
+    static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'static'))
+    
+    app = Flask(__name__, instance_relative_config=True, template_folder=template_dir, static_folder=static_dir)
     
     # Set up configuration
     app.config.from_mapping(
