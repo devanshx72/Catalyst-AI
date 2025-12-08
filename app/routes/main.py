@@ -72,7 +72,7 @@ def news_article():
         # API Request
         url = "https://medium16.p.rapidapi.com/search/stories"
         headers = {
-            "x-rapidapi-key": os.getenv('MEDIUM_API_KEY', 'a9d206afa9msh1a3192fce899677p15fbaajsn6ccdd156cb0e'),
+            "x-rapidapi-key": os.getenv('MEDIUM_API_KEY'),
             "x-rapidapi-host": "medium16.p.rapidapi.com",
         }
         querystring = {"q": query, "limit": "10", "page": str(page)}
