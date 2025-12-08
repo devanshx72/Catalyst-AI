@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 import os
+from datetime import timedelta
 
 def create_app(test_config=None):
     """Create and configure the Flask application"""
@@ -9,11 +10,25 @@ def create_app(test_config=None):
     
     app = Flask(__name__, instance_relative_config=True, template_folder=template_dir, static_folder=static_dir)
     
+    # Generate a stable secret key if not provided
+    # This ensures sessions persist across server restarts
+    secret_key = os.getenv('SECRET_KEY')
+    if not secret_key:
+        # Use a hash of the app path as fallback for development
+        # In production, always set SECRET_KEY in environment
+        import hashlib
+        secret_key = hashlib.sha256(os.path.dirname(__file__).encode()).hexdigest()
+    
     # Set up configuration
     app.config.from_mapping(
-        SECRET_KEY=os.getenv('SECRET_KEY', 'dev'),
+        SECRET_KEY=secret_key,
         MONGO_URI=os.getenv('MONGO_URI'),
         DB_NAME=os.getenv('DB_NAME', 'catalyst_ai_db'),
+        # Session configuration
+        PERMANENT_SESSION_LIFETIME=timedelta(days=7),
+        SESSION_COOKIE_SECURE=False,  # Set to True in production with HTTPS
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE='Lax',
     )
     
     if test_config:

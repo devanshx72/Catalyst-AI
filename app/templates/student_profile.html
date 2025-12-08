@@ -12,17 +12,17 @@ Student Dashboard - (Catalyst AI)
     --primary-color-end: #a78bfa;
     --primary-gradient: linear-gradient(135deg, var(--primary-color-start), var(--primary-color-end));
     --primary-soft: rgba(99, 102, 241, 0.1);
-    
+
     --text-primary: #1e293b;
     --text-secondary: #64748b;
     --text-muted: #94a3b8;
-    
+
     --bg-surface: #ffffff;
     --bg-background: #f1f5f9;
-    
+
     --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
     --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.01);
-    
+
     --radius-lg: 16px;
     --radius-md: 12px;
   }
@@ -75,7 +75,8 @@ Student Dashboard - (Catalyst AI)
     justify-content: center;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
-    -webkit-text-fill-color: initial; /* Reset specific gradient text clip */
+    -webkit-text-fill-color: initial;
+    /* Reset specific gradient text clip */
   }
 
   /* --- Data Display --- */
@@ -110,7 +111,8 @@ Student Dashboard - (Catalyst AI)
     border-radius: 8px;
     border: 1px solid transparent;
     transition: all 0.2s;
-    min-height: 2.5rem; /* Ensure consistent height even if empty */
+    min-height: 2.5rem;
+    /* Ensure consistent height even if empty */
     display: flex;
     align-items: center;
   }
@@ -151,13 +153,15 @@ Student Dashboard - (Catalyst AI)
   /* --- Fullscreen Form Overlay --- */
   .form-container {
     position: fixed;
-    top: 0; 
+    top: 0;
     left: 0;
     width: 100%;
     height: 100vh;
     background: rgba(241, 245, 249, 0.8);
-    backdrop-filter: blur(8px); /* Glassmorphism */
-    z-index: 2000; /* Higher than navbar */
+    backdrop-filter: blur(8px);
+    /* Glassmorphism */
+    z-index: 2000;
+    /* Higher than navbar */
     overflow-y: auto;
     display: none;
     opacity: 0;
@@ -180,7 +184,7 @@ Student Dashboard - (Catalyst AI)
     padding: 3rem;
     border-radius: 24px;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-    border: 1px solid rgba(255,255,255,0.5);
+    border: 1px solid rgba(255, 255, 255, 0.5);
     position: relative;
   }
 
@@ -193,7 +197,8 @@ Student Dashboard - (Catalyst AI)
     display: block;
   }
 
-  .form-control, .form-select {
+  .form-control,
+  .form-select {
     border-radius: var(--radius-md);
     border: 1px solid #e2e8f0;
     padding: 0.85rem 1rem;
@@ -203,7 +208,8 @@ Student Dashboard - (Catalyst AI)
     font-weight: 500;
   }
 
-  .form-control:focus, .form-select:focus {
+  .form-control:focus,
+  .form-select:focus {
     border-color: var(--primary-color-start);
     box-shadow: 0 0 0 4px var(--primary-soft);
     background-color: white;
@@ -265,6 +271,7 @@ Student Dashboard - (Catalyst AI)
     background-color: #f1f5f9;
     color: var(--text-secondary);
   }
+
   .btn-light:hover {
     background-color: #e2e8f0;
     color: var(--text-primary);
@@ -287,7 +294,7 @@ Student Dashboard - (Catalyst AI)
     align-items: center;
     z-index: 2100;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    
+
     opacity: 0;
     transform: translateX(20px);
     visibility: hidden;
@@ -307,13 +314,27 @@ Student Dashboard - (Catalyst AI)
   }
 
   @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
-  
+
   @keyframes slideUpFade {
-    from { opacity: 0; transform: scale(0.98) translateY(20px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
+    from {
+      opacity: 0;
+      transform: scale(0.98) translateY(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
   }
 </style>
 
@@ -323,13 +344,14 @@ Student Dashboard - (Catalyst AI)
     <button class="edit-button" onclick="toggleEdit()" title="Edit Profile">
       <i class="fas fa-pencil-alt"></i>
     </button>
-    
+
     <h5 class="section-title">
-      <i class="fas fa-user"></i> 
+      <i class="fas fa-user"></i>
       <span>Personal Information</span>
     </h5>
-    
-    <div class="row g-4"> <div class="col-md-4">
+
+    <div class="row g-4">
+      <div class="col-md-4">
         <div class="info-group">
           <div class="info-label"><i class="fas fa-signature"></i> Name</div>
           <div class="info-value">{{ user.name if user.name else 'Not provided' }}</div>
@@ -376,7 +398,7 @@ Student Dashboard - (Catalyst AI)
 
   <div class="dashboard-card">
     <h5 class="section-title">
-      <i class="fas fa-briefcase"></i> 
+      <i class="fas fa-briefcase"></i>
       <span>Career Information</span>
     </h5>
     <div class="row g-4">
@@ -388,6 +410,18 @@ Student Dashboard - (Catalyst AI)
       </div>
       <div class="col-md-6">
         <div class="info-group">
+          <div class="info-label"><i class="fas fa-clock"></i> Learning Duration</div>
+          <div class="info-value">
+            {% if user.learning_duration %}
+            {{ user.learning_duration }} {{ user.learning_duration_unit if user.learning_duration_unit else 'months' }}
+            {% else %}
+            Not specified
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="info-group">
           <div class="info-label"><i class="fas fa-building"></i> Dream Company</div>
           <div class="info-value">{{ user.dream_company if user.dream_company else 'Not provided' }}</div>
         </div>
@@ -395,13 +429,15 @@ Student Dashboard - (Catalyst AI)
       <div class="col-md-6">
         <div class="info-group">
           <div class="info-label"><i class="fas fa-rocket"></i> Entrepreneurship Interest</div>
-          <div class="info-value">{{ user.entrepreneurship_interest if user.entrepreneurship_interest else 'Not provided' }}</div>
+          <div class="info-value">{{ user.entrepreneurship_interest if user.entrepreneurship_interest else 'Not
+            provided' }}</div>
         </div>
       </div>
       <div class="col-md-6">
         <div class="info-group">
           <div class="info-label"><i class="fas fa-industry"></i> Interested Industries</div>
-          <div class="info-value">{{ user.interested_industries if user.interested_industries else 'Not provided' }}</div>
+          <div class="info-value">{{ user.interested_industries if user.interested_industries else 'Not provided' }}
+          </div>
         </div>
       </div>
       <div class="col-md-6">
@@ -423,7 +459,7 @@ Student Dashboard - (Catalyst AI)
 
   <div class="dashboard-card">
     <h5 class="section-title">
-      <i class="fas fa-link"></i> 
+      <i class="fas fa-link"></i>
       <span>Social Links</span>
     </h5>
     <div class="row g-4">
@@ -432,9 +468,9 @@ Student Dashboard - (Catalyst AI)
           <div class="info-label"><i class="fab fa-github"></i> GitHub</div>
           <div class="info-value">
             {% if user.githubProfile %}
-              <a href="{{ user.githubProfile }}" target="_blank" class="text-decoration-none">{{ user.githubProfile }}</a>
+            <a href="{{ user.githubProfile }}" target="_blank" class="text-decoration-none">{{ user.githubProfile }}</a>
             {% else %}
-              Not provided
+            Not provided
             {% endif %}
           </div>
         </div>
@@ -444,9 +480,10 @@ Student Dashboard - (Catalyst AI)
           <div class="info-label"><i class="fab fa-linkedin"></i> LinkedIn</div>
           <div class="info-value">
             {% if user.linkedinProfile %}
-              <a href="{{ user.linkedinProfile }}" target="_blank" class="text-decoration-none">{{ user.linkedinProfile }}</a>
+            <a href="{{ user.linkedinProfile }}" target="_blank" class="text-decoration-none">{{ user.linkedinProfile
+              }}</a>
             {% else %}
-              Not provided
+            Not provided
             {% endif %}
           </div>
         </div>
@@ -463,12 +500,12 @@ Student Dashboard - (Catalyst AI)
     </button>
 
     <form id="profileForm" action="/student_profile" method="post">
-      
+
       <h5 class="section-title mb-4">
-        <i class="fas fa-user-edit"></i> 
+        <i class="fas fa-user-edit"></i>
         <span>Edit Account Details</span>
       </h5>
-      
+
       <div class="row g-3">
         <div class="col-md-6">
           <div class="form-group">
@@ -481,7 +518,8 @@ Student Dashboard - (Catalyst AI)
           <div class="form-group">
             <label for="exampleInputEmail1">Email address</label>
             <input type="email" class="form-control" id="exampleInputEmail1" name="email"
-              value="{{ user.email if user.email else '' }}" placeholder="Email" readonly style="background-color: #e2e8f0; cursor: not-allowed;">
+              value="{{ user.email if user.email else '' }}" placeholder="Email" readonly
+              style="background-color: #e2e8f0; cursor: not-allowed;">
           </div>
         </div>
         <div class="col-md-6">
@@ -526,10 +564,10 @@ Student Dashboard - (Catalyst AI)
       </div>
 
       <h5 class="section-title mt-5 mb-4">
-        <i class="fas fa-briefcase"></i> 
+        <i class="fas fa-briefcase"></i>
         <span>Career Aspirations</span>
       </h5>
-      
+
       <div class="row g-3">
         <div class="col-md-6">
           <div class="form-group">
@@ -537,6 +575,21 @@ Student Dashboard - (Catalyst AI)
             <input type="text" class="form-control" id="careerAimGoal" name="career_goal"
               placeholder="e.g., Data Scientist, AI Engineer"
               value="{{ user.career_goal if user.career_goal else '' }}">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="learningDuration">Learning Duration (How long do you have to learn?)</label>
+            <div class="d-flex gap-2">
+              <input type="number" class="form-control" id="learningDuration" name="learning_duration"
+                placeholder="e.g., 6" min="1" max="120" style="flex: 1;"
+                value="{{ user.learning_duration if user.learning_duration else '' }}">
+              <select class="form-select" name="learning_duration_unit" style="width: auto; min-width: 120px;">
+                <option value="months" {% if not user.learning_duration_unit or user.learning_duration_unit=='months'
+                  %}selected{% endif %}>Months</option>
+                <option value="years" {% if user.learning_duration_unit=='years' %}selected{% endif %}>Years</option>
+              </select>
+            </div>
           </div>
         </div>
         <div class="col-md-6">
@@ -550,7 +603,8 @@ Student Dashboard - (Catalyst AI)
           <div class="form-group">
             <label for="entrepreneurshipInterest">Interested in Entrepreneurship?</label>
             <select class="form-select" id="entrepreneurshipInterest" name="entrepreneurship_interest">
-              <option value="" {% if not user.entrepreneurship_interest %}selected{% endif %} disabled>Select one</option>
+              <option value="" {% if not user.entrepreneurship_interest %}selected{% endif %} disabled>Select one
+              </option>
               <option value="Yes" {% if user.entrepreneurship_interest=='Yes' %}selected{% endif %}>Yes</option>
               <option value="No" {% if user.entrepreneurship_interest=='No' %}selected{% endif %}>No</option>
               <option value="Maybe" {% if user.entrepreneurship_interest=='Maybe' %}selected{% endif %}>Maybe</option>
@@ -561,10 +615,14 @@ Student Dashboard - (Catalyst AI)
           <div class="form-group">
             <label for="companyPreference">Company Preference</label>
             <select class="form-select" id="companyPreference" name="company_preference">
-              <option value="" {% if not user.company_preference %}selected{% endif %} disabled>Select preference</option>
-              <option value="service" {% if user.company_preference=='service' %}selected{% endif %}>Service-Based</option>
-              <option value="product" {% if user.company_preference=='product' %}selected{% endif %}>Product-Based</option>
-              <option value="both" {% if user.company_preference=='both' %}selected{% endif %}>Both/No Preference</option>
+              <option value="" {% if not user.company_preference %}selected{% endif %} disabled>Select preference
+              </option>
+              <option value="service" {% if user.company_preference=='service' %}selected{% endif %}>Service-Based
+              </option>
+              <option value="product" {% if user.company_preference=='product' %}selected{% endif %}>Product-Based
+              </option>
+              <option value="both" {% if user.company_preference=='both' %}selected{% endif %}>Both/No Preference
+              </option>
             </select>
           </div>
         </div>
@@ -586,10 +644,10 @@ Student Dashboard - (Catalyst AI)
       </div>
 
       <h5 class="section-title mt-5 mb-4">
-        <i class="fas fa-link"></i> 
+        <i class="fas fa-link"></i>
         <span>Social Links</span>
       </h5>
-      
+
       <div class="row g-3">
         <div class="col-md-6">
           <div class="form-group">
@@ -673,12 +731,12 @@ Student Dashboard - (Catalyst AI)
 
           // 2. Show success message
           successMessage.classList.add('show');
-          
+
           // 3. Hide message and reload page after 2.0 seconds
           setTimeout(() => {
             successMessage.classList.remove('show');
             window.location.reload(); // Reload to show new data
-          }, 2000); 
+          }, 2000);
 
         } else {
           // Handle server error

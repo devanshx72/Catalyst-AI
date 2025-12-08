@@ -18,15 +18,25 @@ def roadmap():
     if not user:
         return redirect(url_for("auth_bp.sign_in"))
     
+    # Check if user has a career goal set
+    career_goal = user.get('career_goal', '').strip()
+    has_career_goal = bool(career_goal)
+    
     # Get roadmap data
     roadmap_data = json.loads(user.get('road_map', '{}'))
     
     # Check if roadmap exists
-    if not roadmap_data or 'phases' not in roadmap_data:
-        return redirect(url_for("main_bp.student_profile"))
+    has_roadmap = roadmap_data and 'phases' in roadmap_data
     
-    # Add the user object to the template context
-    return render_template('road_map.html', roadmap_data=roadmap_data, user=user)
+    # Render template with status flags
+    return render_template(
+        'road_map.html', 
+        roadmap_data=roadmap_data, 
+        user=user,
+        has_career_goal=has_career_goal,
+        has_roadmap=has_roadmap,
+        career_goal=career_goal
+    )
 
 @roadmap_bp.route('/generate-plan/<string:phase_id>', methods=['POST'])
 def generate_plan(phase_id):

@@ -171,7 +171,9 @@ def student_profile():
 
         try:
             desired_role = updated_profile.get('career_goal', 'Software Developer')
-            roadmap_data = get_roadmap_from_groq(desired_role)
+            learning_duration = updated_profile.get('learning_duration')
+            learning_duration_unit = updated_profile.get('learning_duration_unit', 'months')
+            roadmap_data = get_roadmap_from_groq(desired_role, learning_duration, learning_duration_unit)
             updated_profile['road_map'] = json.dumps(roadmap_data)
 
             update_op = {"$set": updated_profile}

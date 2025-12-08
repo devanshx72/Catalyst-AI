@@ -14,21 +14,22 @@
         --primary-end: #a78bfa;
         --primary-gradient: linear-gradient(135deg, var(--primary-start), var(--primary-end));
         --secondary-gradient: linear-gradient(135deg, #3b82f6, #2dd4bf);
-        
+
         --glass-bg: rgba(255, 255, 255, 0.7);
         --glass-border: rgba(255, 255, 255, 0.5);
         --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
-        
+
         --text-main: #1e293b;
         --text-muted: #64748b;
-        
+
         --timeline-line-width: 6px;
     }
 
     /* Animated Background */
     body {
         background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-        background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%); /* Clean fallback */
+        background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+        /* Clean fallback */
         background-attachment: fixed;
     }
 
@@ -36,7 +37,8 @@
         font-family: 'Inter', sans-serif;
         padding-bottom: 5rem;
         position: relative;
-        overflow: hidden; /* Prevent spillover */
+        overflow: hidden;
+        /* Prevent spillover */
     }
 
     /* Decorative blurred blobs for background depth */
@@ -45,18 +47,19 @@
         position: absolute;
         width: 600px;
         height: 600px;
-        background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(0,0,0,0) 70%);
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
         top: -100px;
         left: -200px;
         z-index: -1;
         animation: floatBlob 10s infinite alternate;
     }
+
     .roadmap-container::after {
         content: '';
         position: absolute;
         width: 500px;
         height: 500px;
-        background: radial-gradient(circle, rgba(167,139,250,0.15) 0%, rgba(0,0,0,0) 70%);
+        background: radial-gradient(circle, rgba(167, 139, 250, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
         bottom: 0;
         right: -150px;
         z-index: -1;
@@ -64,8 +67,13 @@
     }
 
     @keyframes floatBlob {
-        0% { transform: translate(0, 0); }
-        100% { transform: translate(50px, 50px); }
+        0% {
+            transform: translate(0, 0);
+        }
+
+        100% {
+            transform: translate(50px, 50px);
+        }
     }
 
     /* --- Header --- */
@@ -74,6 +82,7 @@
         position: relative;
         z-index: 2;
     }
+
     .roadmap-header h2 {
         font-weight: 800;
         font-size: 3rem;
@@ -83,6 +92,7 @@
         margin-bottom: 1rem;
         letter-spacing: -1px;
     }
+
     .roadmap-header .lead {
         font-size: 1.25rem;
         color: var(--text-muted);
@@ -121,9 +131,16 @@
         z-index: 1;
         margin-bottom: 3rem;
     }
-    
-    .container-item.left { left: 0; text-align: right; }
-    .container-item.right { left: 50%; text-align: left; }
+
+    .container-item.left {
+        left: 0;
+        text-align: right;
+    }
+
+    .container-item.right {
+        left: 50%;
+        text-align: left;
+    }
 
     /* --- Timeline Dot (The Pulsing Node) --- */
     .timeline-dot {
@@ -139,8 +156,13 @@
         transition: all 0.3s ease;
     }
 
-    .container-item.left .timeline-dot { right: -12px; }
-    .container-item.right .timeline-dot { left: -12px; }
+    .container-item.left .timeline-dot {
+        right: -12px;
+    }
+
+    .container-item.right .timeline-dot {
+        left: -12px;
+    }
 
     .container-item:hover .timeline-dot {
         transform: scale(1.3);
@@ -162,13 +184,18 @@
         overflow: hidden;
     }
 
-    .container-item.left .content { border-radius: 20px 0 20px 20px; }
-    .container-item.right .content { border-radius: 0 20px 20px 20px; }
+    .container-item.left .content {
+        border-radius: 20px 0 20px 20px;
+    }
+
+    .container-item.right .content {
+        border-radius: 0 20px 20px 20px;
+    }
 
     /* Hover effect for card */
     .content:hover {
         transform: translateY(-5px) scale(1.02);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
         border-color: rgba(99, 102, 241, 0.3);
     }
 
@@ -200,34 +227,40 @@
         overflow: hidden;
         margin: 1rem 0;
     }
-    
+
     .progress-bar {
         background-image: var(--primary-gradient);
         position: relative;
     }
-    
+
     /* Shimmer effect on progress bar */
     .progress-bar::after {
         content: '';
         position: absolute;
-        top: 0; left: 0; bottom: 0; right: 0;
-        background: linear-gradient(
-            45deg,
-            rgba(255,255,255,0.15) 25%, 
-            transparent 25%, 
-            transparent 50%, 
-            rgba(255,255,255,0.15) 50%, 
-            rgba(255,255,255,0.15) 75%, 
-            transparent 75%, 
-            transparent
-        );
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background: linear-gradient(45deg,
+                rgba(255, 255, 255, 0.15) 25%,
+                transparent 25%,
+                transparent 50%,
+                rgba(255, 255, 255, 0.15) 50%,
+                rgba(255, 255, 255, 0.15) 75%,
+                transparent 75%,
+                transparent);
         background-size: 1rem 1rem;
         animation: progressShimmer 1s linear infinite;
     }
 
     @keyframes progressShimmer {
-        from { background-position: 0 0; }
-        to { background-position: 1rem 1rem; }
+        from {
+            background-position: 0 0;
+        }
+
+        to {
+            background-position: 1rem 1rem;
+        }
     }
 
     .progress-bar.bg-success {
@@ -247,8 +280,18 @@
         font-weight: 600;
         font-size: 0.8rem;
     }
-    .bg-warning-light { background: #fff7ed; color: #ea580c; border: 1px solid #ffedd5; }
-    .bg-success-light { background: #ecfdf5; color: #059669; border: 1px solid #d1fae5; }
+
+    .bg-warning-light {
+        background: #fff7ed;
+        color: #ea580c;
+        border: 1px solid #ffedd5;
+    }
+
+    .bg-success-light {
+        background: #ecfdf5;
+        color: #059669;
+        border: 1px solid #d1fae5;
+    }
 
     /* Skills & Resources */
     .skills {
@@ -256,7 +299,8 @@
         flex-wrap: wrap;
         gap: 8px;
         margin-top: 1.5rem;
-        justify-content: inherit; /* Aligns based on parent text-align */
+        justify-content: inherit;
+        /* Aligns based on parent text-align */
     }
 
     .skill {
@@ -269,13 +313,17 @@
         border: 1px solid #bfdbfe;
         transition: transform 0.2s;
     }
-    .skill:hover { transform: translateY(-2px); }
+
+    .skill:hover {
+        transform: translateY(-2px);
+    }
 
     .resources {
         margin-top: 1.5rem;
         padding-top: 1rem;
         border-top: 1px dashed #e2e8f0;
-        text-align: left; /* Always left align resources for readability */
+        text-align: left;
+        /* Always left align resources for readability */
     }
 
     .resources h3 {
@@ -321,12 +369,17 @@
     .btn-modern::after {
         content: '';
         position: absolute;
-        top: 0; left: -100%;
-        width: 100%; height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
         transition: 0.5s;
     }
-    .btn-modern:hover::after { left: 100%; }
+
+    .btn-modern:hover::after {
+        left: 100%;
+    }
 
     .btn-completed {
         background: #ecfdf5;
@@ -341,31 +394,47 @@
 
     /* --- Responsive Mobile Design --- */
     @media (max-width: 768px) {
-        .timeline::after { left: 31px; }
-        
+        .timeline::after {
+            left: 31px;
+        }
+
         .container-item {
             width: 100%;
             padding-left: 70px;
             padding-right: 25px;
-            text-align: left; /* Reset text align */
+            text-align: left;
+            /* Reset text align */
         }
-        
-        .container-item.left, .container-item.right { left: 0; }
-        
+
+        .container-item.left,
+        .container-item.right {
+            left: 0;
+        }
+
         /* Reset Border Radius for Mobile */
-        .container-item.left .content, .container-item.right .content {
+        .container-item.left .content,
+        .container-item.right .content {
             border-radius: 20px;
         }
 
-        .timeline-dot { left: 19px; } /* Center on line */
-        .container-item.left .timeline-dot, .container-item.right .timeline-dot {
+        .timeline-dot {
+            left: 19px;
+        }
+
+        /* Center on line */
+        .container-item.left .timeline-dot,
+        .container-item.right .timeline-dot {
             left: 19px;
             right: auto;
         }
 
-        .roadmap-header h2 { font-size: 2rem; }
-        
-        .skills { justify-content: flex-start; }
+        .roadmap-header h2 {
+            font-size: 2rem;
+        }
+
+        .skills {
+            justify-content: flex-start;
+        }
     }
 </style>
 
@@ -376,81 +445,120 @@
             <p class="lead">Here comes your epic roadmap to success. Ready? Let's go!</p>
         </div>
 
+        {% if not has_career_goal or not has_roadmap %}
+        <!-- Prompt to set career goal -->
+        <div class="col-md-8 mx-auto" data-aos="fade-up" data-aos-duration="800">
+            <div class="content text-center p-5" style="border-radius: 24px;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">🎯</div>
+                <h3 style="font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">
+                    {% if not has_career_goal %}
+                    Let's Set Your Career Goal First!
+                    {% else %}
+                    Your Roadmap is Being Prepared
+                    {% endif %}
+                </h3>
+                <p class="description mb-4" style="font-size: 1.1rem;">
+                    {% if not has_career_goal %}
+                    To generate a personalized learning roadmap, we need to know your career goal.
+                    Head to your profile and tell us what role you're aiming for!
+                    {% else %}
+                    Update your profile to regenerate your roadmap with your career goal: <strong>{{ career_goal
+                        }}</strong>
+                    {% endif %}
+                </p>
+                <a href="{{ url_for('main_bp.student_profile') }}" class="btn btn-modern"
+                    style="display: inline-block; width: auto; padding: 1rem 3rem;">
+                    <i class="fas fa-user-edit me-2"></i>
+                    {% if not has_career_goal %}Update Your Profile{% else %}Regenerate Roadmap{% endif %}
+                </a>
+
+                {% if not has_career_goal %}
+                <div class="mt-4"
+                    style="padding: 1rem; background: #f8fafc; border-radius: 12px; border-left: 4px solid #6366f1;">
+                    <p class="mb-0" style="font-size: 0.9rem; color: var(--text-muted);">
+                        <i class="fas fa-lightbulb me-2" style="color: #f59e0b;"></i>
+                        <strong>Tip:</strong> Also set your <strong>Learning Duration</strong> to get a timeline that
+                        fits your schedule!
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <!-- Normal timeline -->
         <div class="timeline">
             {% for phase in roadmap_data.phases %}
-                {% set total_days = namespace(value=0) %}
-                {% set completed_days = namespace(value=0) %}
-                
-                {% if phase.get('learning_plan') %}
-                    {% for week in phase.learning_plan.weekly_schedule %}
-                        {% for task in week.daily_tasks %}
-                            {% set total_days.value = total_days.value + 1 %}
-                            {% if task.completed %}
-                                {% set completed_days.value = completed_days.value + 1 %}
-                            {% endif %}
-                        {% endfor %}
-                    {% endfor %}
-                {% endif %}
+            {% set total_days = namespace(value=0) %}
+            {% set completed_days = namespace(value=0) %}
 
-                {% set progress = (completed_days.value / total_days.value * 100)|round if total_days.value > 0 else 0 %}
-                
-                <div class="container-item {% if loop.index % 2 == 0 %}right{% else %}left{% endif %}"
-                     data-aos="{% if loop.index % 2 == 0 %}fade-left{% else %}fade-right{% endif %}"
-                     data-aos-offset="100"
-                     data-aos-delay="{{ loop.index0 * 100 }}"> <div class="timeline-dot"></div>
-                    
-                    <div class="content">
-                        <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-2">
-                            <h2>{{ phase.name }}</h2>
-                            <span class="badge progress-badge bg-{{ 'success-light' if progress == 100 else 'warning-light' }}">
-                                {{ progress }}% Complete
-                            </span>
-                        </div>
-                        
-                        <span class="duration"><i class="far fa-clock me-1"></i> {{ phase.duration }}</span>
-                        
-                        <div class="progress mt-2">
-                            <div class="progress-bar {% if progress == 100 %}bg-success{% endif %}" 
-                                 role="progressbar" 
-                                 style="width: {{ progress }}%;" 
-                                 aria-valuenow="{{ progress }}" 
-                                 aria-valuemin="0" 
-                                 aria-valuemax="100">
-                            </div>
-                        </div>
+            {% if phase.get('learning_plan') %}
+            {% for week in phase.learning_plan.weekly_schedule %}
+            {% for task in week.daily_tasks %}
+            {% set total_days.value = total_days.value + 1 %}
+            {% if task.completed %}
+            {% set completed_days.value = completed_days.value + 1 %}
+            {% endif %}
+            {% endfor %}
+            {% endfor %}
+            {% endif %}
 
-                        <p class="mt-3 description">{{ phase.description }}</p>
-                        
-                        <div class="skills">
-                            {% for skill in phase.skills %}
-                                <span class="skill"><i class="fas fa-bolt me-1"></i> {{ skill }}</span>
-                            {% endfor %}
-                        </div>
-                        
-                        <div class="resources">
-                            <h3><i class="fas fa-book-reader me-2"></i> Learning Resources</h3>
-                            {% for category, items in phase.resources.items() %}
-                                <div class="resource-item">
-                                    <strong>{{ category }}:</strong>
-                                    <span class="text-muted">{{ items|join(' • ') }}</span>
-                                </div>
-                            {% endfor %}
-                        </div>
+            {% set progress = (completed_days.value / total_days.value * 100)|round if total_days.value > 0 else 0 %}
 
-                        {% if progress < 100 %}
-                            <button onclick="startModule('{{loop.index0}}')" class="btn btn-modern">
-                                <i class="fas fa-play-circle me-2"></i> 
-                                {% if total_days.value > 0 %}Continue Module{% else %}Start Module{% endif %}
-                            </button>
-                        {% else %}
-                            <button class="btn btn-completed mt-3" disabled>
-                                <i class="fas fa-check-circle me-2"></i> Module Completed
-                            </button>
-                        {% endif %}
+            <div class="container-item {% if loop.index % 2 == 0 %}right{% else %}left{% endif %}"
+                data-aos="{% if loop.index % 2 == 0 %}fade-left{% else %}fade-right{% endif %}" data-aos-offset="100"
+                data-aos-delay="{{ loop.index0 * 100 }}">
+                <div class="timeline-dot"></div>
+
+                <div class="content">
+                    <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-2">
+                        <h2>{{ phase.name }}</h2>
+                        <span
+                            class="badge progress-badge bg-{{ 'success-light' if progress == 100 else 'warning-light' }}">
+                            {{ progress }}% Complete
+                        </span>
                     </div>
+
+                    <span class="duration"><i class="far fa-clock me-1"></i> {{ phase.duration }}</span>
+
+                    <div class="progress mt-2">
+                        <div class="progress-bar {% if progress == 100 %}bg-success{% endif %}" role="progressbar"
+                            style="width: {{ progress }}%;" aria-valuenow="{{ progress }}" aria-valuemin="0"
+                            aria-valuemax="100">
+                        </div>
+                    </div>
+
+                    <p class="mt-3 description">{{ phase.description }}</p>
+
+                    <div class="skills">
+                        {% for skill in phase.skills %}
+                        <span class="skill"><i class="fas fa-bolt me-1"></i> {{ skill }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="resources">
+                        <h3><i class="fas fa-book-reader me-2"></i> Learning Resources</h3>
+                        {% for category, items in phase.resources.items() %}
+                        <div class="resource-item">
+                            <strong>{{ category }}:</strong>
+                            <span class="text-muted">{{ items|join(' • ') }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    {% if progress < 100 %} <button onclick="startModule('{{loop.index0}}')" class="btn btn-modern">
+                        <i class="fas fa-play-circle me-2"></i>
+                        {% if total_days.value > 0 %}Continue Module{% else %}Start Module{% endif %}
+                        </button>
+                        {% else %}
+                        <button class="btn btn-completed mt-3" disabled>
+                            <i class="fas fa-check-circle me-2"></i> Module Completed
+                        </button>
+                        {% endif %}
                 </div>
+            </div>
             {% endfor %}
         </div>
+        {% endif %}
     </div>
 </div>
 
@@ -478,22 +586,22 @@
                 'Content-Type': 'application/json'
             }
         })
-        .then(response => response.json())
-        .then(data => {
-            if(data.status === 'success' || data.status === 'exists') {
-                window.location.href = `/learning-plan/${phaseId}`;
-            } else {
-                alert('Error: ' + data.message);
-                btn.innerHTML = originalContent; // Revert on error
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success' || data.status === 'exists') {
+                    window.location.href = `/learning-plan/${phaseId}`;
+                } else {
+                    alert('Error: ' + data.message);
+                    btn.innerHTML = originalContent; // Revert on error
+                    btn.style.opacity = '1';
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert('Error: ' + error);
+                btn.innerHTML = originalContent;
                 btn.style.opacity = '1';
-            }
-        })
-        .catch(error => {
-            console.error("Error:", error);
-            alert('Error: ' + error);
-            btn.innerHTML = originalContent;
-            btn.style.opacity = '1';
-        });
+            });
     }
 </script>
 {% endblock %}

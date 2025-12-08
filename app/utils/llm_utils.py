@@ -173,9 +173,10 @@ def fetch_github_projects(github_input):
 # GROQ: LEARNING PLANS & TUTOR (FULLY WORKING)
 # ===================================================================
 
-def get_roadmap_from_groq(topic):
+def get_roadmap_from_groq(topic, duration=None, duration_unit="months"):
     """
     Generate a 4-phase learning roadmap using Groq.
+    Optionally accepts a duration to customize phase timelines.
     Returns valid JSON with 'resources' in every phase — NO TEMPLATE CRASHES.
     """
     if not GROQ_API_KEY:
@@ -194,6 +195,14 @@ def get_roadmap_from_groq(topic):
             ] * 4
         }
 
+    # Build duration context for the prompt
+    duration_context = ""
+    if duration:
+        total_time = f"{duration} {duration_unit}"
+        duration_context = f"\nIMPORTANT: The learner has {total_time} to complete this roadmap. Distribute the 4 phases accordingly within this timeframe. Make phase durations realistic and add up to approximately {total_time}."
+    else:
+        duration_context = "\nAssume a standard 6-12 month learning timeline."
+
     prompt = f'''Create a structured learning roadmap for "{topic}" in this EXACT JSON format:
 {{
     "phases": [
@@ -210,6 +219,7 @@ def get_roadmap_from_groq(topic):
         }}
     ]
 }}
+{duration_context}
 Include exactly 4 phases. Return ONLY valid JSON. No markdown, no explanations.'''
 
     try:

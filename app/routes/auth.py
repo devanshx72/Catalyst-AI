@@ -12,6 +12,10 @@ auth_bp = Blueprint('auth_bp', __name__)
 
 @auth_bp.route("/sign_up", methods=['POST', 'GET'])
 def sign_up():
+    # Redirect to home if already logged in
+    if "user_id" in session:
+        return redirect(url_for('main_bp.home'))
+    
     if request.method == 'POST':
         # Get form data
         username = request.form['username']
@@ -70,6 +74,10 @@ def sign_up():
 
 @auth_bp.route("/sign_in", methods=['POST', 'GET'])
 def sign_in():
+    # Redirect to home if already logged in
+    if "user_id" in session:
+        return redirect(url_for('main_bp.home'))
+    
     if request.method == 'POST':
         email_or_user_id = request.form['username']
         password = request.form['password']
@@ -83,6 +91,7 @@ def sign_in():
                 # Store user info in the session
                 session['user_id'] = user['user_id']  # Save user ID in session
                 session['name'] = user['name']
+                session.permanent = True  # Make session persist for 7 days
                 flash(f"Welcome back, {user['name']}!", "success")
                 return redirect(url_for('main_bp.home'))
             else:
