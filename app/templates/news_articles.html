@@ -1,138 +1,465 @@
 {% extends "base.html" %}
 
 {% block title %}
-News Articles
+Tech News - Catalyst AI
 {% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <h2 class="text-center mb-4">Explore Articles</h2>
-    <style>
-        /* Style for category links */
-        .category-link {
-            text-decoration: none;
-            color: #555;
-            font-weight: 500;
-            position: relative;
-            padding-bottom: 5px;
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+<style>
+    :root {
+        --primary-start: #6366f1;
+        --primary-end: #a78bfa;
+        --primary-gradient: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+
+        --glass-bg: rgba(255, 255, 255, 0.8);
+        --glass-border: rgba(255, 255, 255, 0.6);
+        --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+    }
+
+    body {
+        background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+    }
+
+    .page-wrapper {
+        position: relative;
+        overflow: hidden;
+        min-height: 80vh;
+        padding-bottom: 3rem;
+    }
+
+    /* Background blobs */
+    .page-wrapper::before {
+        content: '';
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+        top: -200px;
+        right: -200px;
+        z-index: -1;
+        animation: floatBlob 10s infinite alternate;
+    }
+
+    .page-wrapper::after {
+        content: '';
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(167, 139, 250, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+        bottom: -100px;
+        left: -150px;
+        z-index: -1;
+        animation: floatBlob 10s infinite alternate-reverse;
+    }
+
+    @keyframes floatBlob {
+        0% {
+            transform: translate(0, 0);
         }
 
-        .category-link:hover,
-        .category-link.active {
-            color: #000;
+        100% {
+            transform: translate(40px, 40px);
+        }
+    }
+
+    /* Page Header */
+    .page-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .page-header h1 {
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: var(--text-main);
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header .highlight {
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .page-header p {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+    }
+
+    /* Category Navigation */
+    .category-nav {
+        background: var(--glass-bg);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--glass-shadow);
+    }
+
+    .category-scroll {
+        display: flex;
+        gap: 0.5rem;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        padding: 0.5rem 0;
+        scrollbar-width: none;
+    }
+
+    .category-scroll::-webkit-scrollbar {
+        display: none;
+    }
+
+    .category-chip {
+        flex-shrink: 0;
+        padding: 0.6rem 1.25rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: 1px solid #e2e8f0;
+        background: white;
+        color: var(--text-muted);
+        white-space: nowrap;
+    }
+
+    .category-chip:hover {
+        border-color: var(--primary-start);
+        color: var(--primary-start);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+    }
+
+    .category-chip.active {
+        background: var(--primary-gradient);
+        color: white;
+        border-color: transparent;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    }
+
+    .nav-arrow {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        border: 1px solid #e2e8f0;
+        background: white;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+    }
+
+    .nav-arrow:hover {
+        background: var(--primary-gradient);
+        color: white;
+        border-color: transparent;
+        transform: scale(1.05);
+    }
+
+    /* Articles Container */
+    .articles-container {
+        background: var(--glass-bg);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        padding: 2rem;
+        box-shadow: var(--glass-shadow);
+    }
+
+    /* Article Card */
+    .article-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.25rem;
+        border: 1px solid #f1f5f9;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.08);
+        border-color: rgba(99, 102, 241, 0.2);
+    }
+
+    .article-title {
+        font-weight: 700;
+        font-size: 1.15rem;
+        color: var(--text-main);
+        margin-bottom: 0.75rem;
+        line-height: 1.4;
+    }
+
+    .article-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+
+    .article-meta span {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .article-meta i {
+        color: var(--primary-start);
+        opacity: 0.7;
+    }
+
+    .article-stats {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-badge {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 0.4rem 0.8rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .stat-badge.claps {
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        border-color: #fcd34d;
+        color: #b45309;
+    }
+
+    .stat-badge.comments {
+        background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+        border-color: #93c5fd;
+        color: #1d4ed8;
+    }
+
+    .btn-read {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 0.65rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        border: none;
+        align-self: flex-start;
+        margin-top: auto;
+    }
+
+    .btn-read:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);
+        color: white;
+    }
+
+    .btn-read i {
+        transition: transform 0.3s;
+    }
+
+    .btn-read:hover i {
+        transform: translateX(3px);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #cbd5e1;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h3 {
+        color: var(--text-main);
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        color: var(--text-muted);
+    }
+
+    /* Pagination */
+    .pagination-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .btn-page {
+        background: white;
+        border: 1px solid #e2e8f0;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-page:hover {
+        background: var(--primary-gradient);
+        color: white;
+        border-color: transparent;
+        transform: translateY(-2px);
+    }
+
+    .btn-page.disabled {
+        opacity: 0.4;
+        pointer-events: none;
+    }
+
+    @media (max-width: 768px) {
+        .page-header h1 {
+            font-size: 1.8rem;
         }
 
-        .category-link::after {
-            content: "";
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background-color: #007bff;
-            transition: width 0.3s;
+        .articles-container {
+            padding: 1.25rem;
         }
 
-        .category-link.active::after {
-            width: 100%;
+        .article-card {
+            padding: 1.25rem;
         }
+    }
+</style>
 
-        /* General button styling */
-        button#leftArrow, button#rightArrow {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: none;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            transition: background-color 0.2s, box-shadow 0.2s;
-            cursor: pointer;
-        }
+<div class="page-wrapper">
+    <div class="container my-5">
 
-        button#leftArrow:hover,
-        button#rightArrow:hover {
-            background-color: #f7f7f7;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        }
+        <!-- Page Header -->
+        <div class="page-header" data-aos="fade-down">
+            <h1>Explore <span class="highlight">Tech Articles</span></h1>
+            <p>Stay updated with the latest insights and trends in technology</p>
+        </div>
 
-        /* Arrow icons */
-        button#leftArrow i,
-        button#rightArrow i {
-            font-size: 18px;
-            color: #555;
-        }
+        <!-- Category Navigation -->
+        <div class="category-nav" data-aos="fade-up" data-aos-delay="100">
+            <div class="d-flex align-items-center gap-3">
+                <button id="leftArrow" class="nav-arrow">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
 
-        button#leftArrow:hover i,
-        button#rightArrow:hover i {
-            color: #007bff;
-        }
+                <div id="categoryContainer" class="category-scroll">
+                    {% for category in categories %}
+                    <a href="/news-articles?q={{ category|lower }}"
+                        class="category-chip {{ 'active' if query == category|lower else '' }}">
+                        {{ category }}
+                    </a>
+                    {% endfor %}
+                </div>
 
+                <button id="rightArrow" class="nav-arrow">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
 
-    </style>
-    <div class="d-flex align-items-center mb-4 position-relative">
-        <button id="leftArrow" class="btn btn-light shadow-sm me-2 rounded-circle">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-        <div id="categoryContainer" class="d-flex overflow-hidden flex-nowrap w-100" style="scroll-behavior: smooth;">
-            {% for category in categories %}
-            <div class="px-3 mx-2">
-                <a href="/news-articles?q={{ category|lower }}" 
-                class="category-link {{ 'active' if query == category|lower else '' }}">
-                    {{ category }}
+        <!-- Articles Container -->
+        <div class="articles-container" data-aos="fade-up" data-aos-delay="200">
+
+            {% if stories and stories|length > 0 %}
+            <div class="row">
+                {% for story in stories %}
+                <div class="col-lg-6 col-md-12">
+                    <div class="article-card" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 50 }}">
+                        <h3 class="article-title">{{ story.title }}</h3>
+
+                        <div class="article-meta">
+                            <span><i class="fas fa-user"></i> {{ story.author.name }}</span>
+                            <span><i class="fas fa-clock"></i> {{ story.readingTime | round(1) }} min read</span>
+                            <span><i class="fas fa-file-alt"></i> {{ story.wordCount }} words</span>
+                        </div>
+
+                        <div class="article-stats">
+                            <span class="stat-badge claps">
+                                <i class="fas fa-hands-clapping"></i> {{ story.clapCount }}
+                            </span>
+                            <span class="stat-badge comments">
+                                <i class="fas fa-comment"></i> {{ story.responses }}
+                            </span>
+                        </div>
+
+                        <a href="{{ story.url }}" target="_blank" class="btn-read">
+                            Read Article <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- Empty State -->
+            <div class="empty-state">
+                <i class="fas fa-newspaper"></i>
+                <h3>No Articles Found</h3>
+                <p>We couldn't find any articles for "{{ query }}". Try selecting a different category above.</p>
+            </div>
+            {% endif %}
+
+            <!-- Pagination -->
+            <div class="pagination-wrapper">
+                {% if page > 0 %}
+                <a href="/news-articles?q={{ query }}&page={{ page - 1 }}" class="btn-page">
+                    <i class="fas fa-arrow-left"></i> Previous
+                </a>
+                {% else %}
+                <span class="btn-page disabled">
+                    <i class="fas fa-arrow-left"></i> Previous
+                </span>
+                {% endif %}
+
+                <span class="text-muted">Page {{ page + 1 }}</span>
+
+                <a href="/news-articles?q={{ query }}&page={{ page + 1 }}" class="btn-page">
+                    Next <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
-            {% endfor %}
-        </div>
-        <button id="rightArrow" class="btn btn-light shadow-sm ms-2 rounded-circle">
-            <i class="fas fa-chevron-right"></i>
-        </button>
-    </div>
-
-    
-
-    <!-- Article List -->
-    <div class="shadow-lg p-3 mb-5 bg-body-tertiary rounded">
-        <div class="row">
-            {% for story in stories %}
-            <div class="col-7 mb-4">
-                <div class="p-3" style="border-bottom: 2px solid #ddd;">
-                    <h5>{{ story.title }}</h5>
-                    <p class="text-muted mb-1">
-                        By <strong>{{ story.author.name }}</strong> - {{ story.wordCount }} words
-                    </p>
-                    <p class="text-muted small">Reading Time: {{ story.readingTime | round(1) }} mins</p>
-                    <p>
-                        <span class="badge bg-primary">
-                            <i class="fa-solid fa-hands-clapping"></i> {{ story.clapCount }}
-                        </span>
-                        <span class="badge bg-success">
-                            <i class="fa-solid fa-comment"></i> {{ story.responses }}
-                        </span>
-                    </p>
-                    <a href="{{ story.url }}" target="_blank" class="btn btn-link btn-sm">
-                        Read More
-                    </a>
-                </div>
-            </div>
-            {% endfor %}
         </div>
 
-        <!-- Pagination -->
-        <div class="d-flex justify-content-between mt-4">
-            {% if page > 0 %}
-            <a href="/news-articles?q={{ query }}&page={{ page - 1 }}" class="btn btn-outline-primary btn-sm">&lt; Previous</a>
-            {% else %}
-            <span></span>
-            {% endif %}
-            <a href="/news-articles?q={{ query }}&page={{ page + 1 }}" class="btn btn-outline-primary btn-sm">Next &gt;</a>
-        </div>
     </div>
 </div>
 
-<!-- JavaScript for Scrollable Categories -->
+<!-- AOS Animation -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
+    AOS.init({ duration: 800, once: true });
+
+    // Category scroll functionality
     const leftArrow = document.getElementById('leftArrow');
     const rightArrow = document.getElementById('rightArrow');
     const categoryContainer = document.getElementById('categoryContainer');

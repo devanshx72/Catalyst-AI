@@ -3,19 +3,220 @@
 {% block title %}Page Not Found - Catalyst AI{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center align-items-center" style="min-height: 60vh;">
-    <div class="col-md-6 text-center">
-        <div class="mb-4">
-            <i class="bi bi-exclamation-triangle display-1 text-warning"></i>
-        </div>
-        <h1 class="display-4 fw-bold mb-3">404</h1>
-        <h2 class="h4 mb-4 text-muted">Oops! Page Not Found</h2>
-        <p class="lead mb-5 text-secondary">
-            The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
+<style>
+    :root {
+        --primary-start: #6366f1;
+        --primary-end: #a78bfa;
+        --primary-gradient: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    }
+
+    body {
+        background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+        min-height: 100vh;
+    }
+
+    .error-container {
+        position: relative;
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    /* Background blobs */
+    .error-container::before {
+        content: '';
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(0, 0, 0, 0) 70%);
+        top: -150px;
+        left: -100px;
+        z-index: -1;
+        animation: floatBlob 10s infinite alternate;
+    }
+
+    .error-container::after {
+        content: '';
+        position: absolute;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(167, 139, 250, 0.12) 0%, rgba(0, 0, 0, 0) 70%);
+        bottom: -100px;
+        right: -50px;
+        z-index: -1;
+        animation: floatBlob 10s infinite alternate-reverse;
+    }
+
+    @keyframes floatBlob {
+        0% {
+            transform: translate(0, 0);
+        }
+
+        100% {
+            transform: translate(30px, 30px);
+        }
+    }
+
+    .error-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 28px;
+        padding: 4rem 3rem;
+        text-align: center;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+        max-width: 550px;
+        animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .error-code {
+        font-size: 8rem;
+        font-weight: 900;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1;
+        margin-bottom: 1rem;
+        letter-spacing: -5px;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.7;
+        }
+    }
+
+    .error-emoji {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        animation: bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+
+    .error-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 1rem;
+    }
+
+    .error-message {
+        color: #64748b;
+        font-size: 1.05rem;
+        line-height: 1.7;
+        margin-bottom: 2rem;
+    }
+
+    .btn-home {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 1rem 2.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.35);
+        border: none;
+    }
+
+    .btn-home:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px -5px rgba(99, 102, 241, 0.45);
+        color: white;
+    }
+
+    .btn-home i {
+        transition: transform 0.3s;
+    }
+
+    .btn-home:hover i {
+        transform: translateX(-3px);
+    }
+
+    .helpful-links {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .helpful-links span {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        display: block;
+        margin-bottom: 0.75rem;
+    }
+
+    .helpful-links a {
+        color: #6366f1;
+        text-decoration: none;
+        font-weight: 500;
+        margin: 0 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .helpful-links a:hover {
+        color: #4f46e5;
+        text-decoration: underline;
+    }
+</style>
+
+<div class="error-container">
+    <div class="error-card">
+        <div class="error-emoji">🔍</div>
+        <div class="error-code">404</div>
+        <h1 class="error-title">Page Not Found</h1>
+        <p class="error-message">
+            Oops! The page you're looking for seems to have wandered off.
+            It might have been moved, deleted, or never existed in the first place.
         </p>
-        <a href="/" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">
-            <i class="bi bi-house-door-fill me-2"></i> Back to Dashboard
+        <a href="{{ url_for('main_bp.home') }}" class="btn-home">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
         </a>
+
+        <div class="helpful-links">
+            <span>Or try one of these:</span>
+            <a href="{{ url_for('main_bp.student_profile') }}">Profile</a>
+            <a href="{{ url_for('roadmap_bp.roadmap') }}">Roadmap</a>
+            <a href="{{ url_for('career_coach_bp.career_coach') }}">Leo Coach</a>
+        </div>
     </div>
 </div>
 {% endblock %}
