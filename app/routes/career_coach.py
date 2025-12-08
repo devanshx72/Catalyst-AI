@@ -11,9 +11,16 @@ markdowner = Markdown()
 # Career coach blueprint
 career_coach_bp = Blueprint('career_coach_bp', __name__)
 
-def generate_prompt(user_data, user_query, chat_history):
+def generate_prompt(user_data, user_query, chat_history, github_projects=None, user_profile=None):
     """
-    Generates a context-aware prompt for the LLM using LinkedIn data.
+    Generates a context-aware prompt for the LLM using LinkedIn data, GitHub projects, and career goals.
+    
+    Args:
+        user_data: LinkedIn/rich profile data (experiences, education, etc.)
+        user_query: The user's current question
+        chat_history: Previous conversation messages
+        github_projects: List of GitHub repositories
+        user_profile: Basic user profile with career goal, dream company, etc.
     """
     # === 1. Personal Info ===
     # Fallback to "User" if name is missing
@@ -21,6 +28,15 @@ def generate_prompt(user_data, user_query, chat_history):
     first_name = full_name.split()[0] if full_name else "User"
     headline = user_data.get("position", "Student")
     about_summary = user_data.get("about", "No summary provided.")
+    
+    # === 1b. Career Aspirations (from user profile) ===
+    profile = user_profile or {}
+    career_goal = profile.get("career_goal", "Not specified")
+    dream_company = profile.get("dream_company", "Not specified")
+    company_preference = profile.get("company_preference", "Not specified")
+    personal_statement = profile.get("personal_statement", "Not provided")
+    industries = profile.get("interested_industries") or profile.get("key_interests", [])
+    industries_str = ', '.join(industries[:5]) if isinstance(industries, list) else str(industries) if industries else "Not specified"
 
     # === 2. Skills / Interests ===
     # In our DB schema, 'interests' holds the skills/languages from LinkedIn
@@ -56,7 +72,19 @@ def generate_prompt(user_data, user_query, chat_history):
     
     edu_str = "\n".join(education_list) if education_list else "No education listed."
 
-    # === 5. Chat History (Last 3 interactions for context) ===
+    # GitHub Projects
+    github_str = "No GitHub projects available."
+    if github_projects and isinstance(github_projects, list) and len(github_projects) > 0:
+        project_lines = []
+        for repo in github_projects:
+            name = repo.get('title', 'Project')
+            desc = repo.get('description', 'No description')
+            lang = repo.get('language', 'Unknown')
+            stars = repo.get('stars', 0)
+            project_lines.append(f"- {name} ({lang}, {stars}★): {desc[:80]}")
+        github_str = "\n".join(project_lines)
+
+    # === 6. Chat History (Last 3 interactions for context) ===
     recent_history = chat_history[-3:]
     history_str = ""
     for msg in recent_history:
@@ -75,6 +103,13 @@ def generate_prompt(user_data, user_query, chat_history):
         Headline: {headline}
         Summary: {about_summary}
         
+        === CAREER ASPIRATIONS ===
+        Career Goal: {career_goal}
+        Dream Company: {dream_company}
+        Company Preference: {company_preference}
+        Industries of Interest: {industries_str}
+        Personal Statement: {personal_statement[:200] if personal_statement else 'Not provided'}
+        
         TOP SKILLS:
         {skills_str}
         
@@ -84,7 +119,10 @@ def generate_prompt(user_data, user_query, chat_history):
         EDUCATION:
         {edu_str}
         
-        === CONVERSATION HISTORY ===
+        GITHUB PROJECTS:
+        {github_str}
+        
+        === CONVERSATION HISTORY (Memory) ===
         {history_str}
         
         === USER QUESTION ===
@@ -92,11 +130,13 @@ def generate_prompt(user_data, user_query, chat_history):
         
         === INSTRUCTIONS ===
         1. Address the user as "{first_name}".
-        2. Answer the user's question specifically based on their profile data above.
-        3. If they ask about jobs, suggest roles that fit their Experience and Skills.
-        4. Be concise (max 3 short paragraphs).
-        5. Use a warm, professional, and motivating tone.
-        6. Use formatting (bullet points, bold text) where helpful.
+        2. Answer the user's question based on their FULL profile above, including their career aspirations.
+        3. If they ask about jobs, suggest roles that align with their Career Goal ({career_goal}) and Dream Company ({dream_company}).
+        4. Reference their GitHub projects when discussing their portfolio or technical skills.
+        5. Remember the conversation history to provide contextual, coherent responses.
+        6. Be concise (max 3 short paragraphs).
+        7. Use a warm, professional, and motivating tone.
+        8. Use formatting (bullet points, bold text) where helpful.
         """.strip()
 
 @career_coach_bp.route('/your-career_coach-leo011', methods=['POST', 'GET'])
@@ -143,16 +183,32 @@ def career_coach():
             rich_user_data["interests"] = rich_user_data.get("key_interests", [])
 
         # --------------------------------------------------------------
-        # 4. Get Chat History
+        # 4. Fetch GitHub Projects
+        # --------------------------------------------------------------
+        github_projects = None
+        github_url = user_record.get('github_profile') or user_record.get('githubProfile')
+        if github_url:
+            try:
+                github_projects = fetch_github_projects(github_url)
+                if isinstance(github_projects, str):
+                    # It's an error message, log it
+                    print(f"[Leo] GitHub fetch warning: {github_projects}")
+                    github_projects = None
+            except Exception as e:
+                print(f"[Leo] GitHub fetch error: {e}")
+                github_projects = None
+
+        # --------------------------------------------------------------
+        # 5. Get Chat History
         # --------------------------------------------------------------
         conv = leo_chat_history.find_one({"user_id": user_id})
         chat_history = conv.get("messages", []) if conv else []
 
         # --------------------------------------------------------------
-        # 5. Generate AI Response
+        # 6. Generate AI Response
         # --------------------------------------------------------------
         try:
-            prompt = generate_prompt(rich_user_data, user_query, chat_history)
+            prompt = generate_prompt(rich_user_data, user_query, chat_history, github_projects, user_record)
             raw_resp = get_mistral_response(prompt, tokens=400)
 
             # Convert Markdown to HTML for display

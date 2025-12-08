@@ -104,16 +104,69 @@ Respond:
 # GITHUB
 # ===================================================================
 
-def fetch_github_projects(github_username):
-    url = f"https://api.github.com/users/{github_username}/repos"
+def extract_github_username(github_input):
+    """
+    Extract GitHub username from a profile URL or return as-is if already a username.
+    
+    Handles:
+    - https://github.com/username
+    - http://github.com/username
+    - github.com/username
+    - username (returns as-is)
+    """
+    if not github_input:
+        return None
+    
+    github_input = github_input.strip().rstrip('/')
+    
+    # Check if it's a URL
+    if 'github.com' in github_input:
+        # Extract the username from the URL path
+        parts = github_input.split('github.com/')
+        if len(parts) > 1:
+            # Get the first path segment (username)
+            username = parts[1].split('/')[0]
+            return username if username else None
+    
+    # Already a username
+    return github_input
+
+
+def fetch_github_projects(github_input):
+    """
+    Fetch GitHub repositories for a user.
+    
+    Args:
+        github_input: GitHub profile URL (https://github.com/username) or just username
+    
+    Returns:
+        List of repo dicts with title, description, language, stars
+        OR string error message if fetch fails
+    """
+    username = extract_github_username(github_input)
+    
+    if not username:
+        return "No valid GitHub username provided"
+    
+    url = f"https://api.github.com/users/{username}/repos?sort=updated&per_page=10"
     try:
-        response = requests.get(url, headers={"User-Agent": "CareerCoach"})
+        response = requests.get(url, headers={"User-Agent": "CatalystAI-CareerCoach"})
         response.raise_for_status()
         repos = response.json()
-        return [{"title": r["name"], "description": r["description"] or "No description"} for r in repos[:6]]
+        
+        # Return richer data
+        return [
+            {
+                "title": r["name"],
+                "description": r["description"] or "No description",
+                "language": r["language"] or "Not specified",
+                "stars": r.get("stargazers_count", 0)
+            }
+            for r in repos
+        ]
     except Exception as e:
-        print(f"[GitHub] Fetch failed: {e}")
-        return "GitHub fetch failed"
+        print(f"[GitHub] Fetch failed for '{username}': {e}")
+        return f"GitHub fetch failed: {e}"
 
 
 # ===================================================================
