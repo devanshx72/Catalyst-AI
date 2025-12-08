@@ -1,144 +1,596 @@
 {% extends 'base.html' %}
 
 {% block title %}
-Sign Up - (Catalyst AI)
+Sign Up - Catalyst AI
 {% endblock %}
 
 {% block content %}
 
 <style>
-    .auth-hero {
-        background: linear-gradient(135deg, #28a745 0%, #6ccf6f 100%);
+    /* Auth Page Full-Screen Layout */
+    .auth-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        z-index: 9999;
+        background: #f8fafc;
+    }
+
+    /* Left Branding Panel */
+    .auth-branding {
+        flex: 0 0 45%;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 3rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .auth-branding::before {
+        content: '';
+        position: absolute;
+        width: 400px;
+        height: 400px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        top: -100px;
+        left: -100px;
+    }
+
+    .auth-branding::after {
+        content: '';
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 50%;
+        bottom: -50px;
+        right: -50px;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 24px;
+        padding: 2.5rem;
+        text-align: center;
+        color: white;
+        max-width: 380px;
+        position: relative;
+        z-index: 1;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .glass-card img {
+        width: 80px;
+        margin-bottom: 1.5rem;
+        filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
+    }
+
+    .glass-card h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+    }
+
+    .glass-card p {
+        opacity: 0.9;
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    .floating-shapes {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    .floating-shapes span {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .floating-shapes span:nth-child(1) {
+        width: 80px;
+        height: 80px;
+        top: 20%;
+        left: 10%;
+        animation-delay: 0s;
+    }
+
+    .floating-shapes span:nth-child(2) {
+        width: 60px;
+        height: 60px;
+        top: 60%;
+        right: 15%;
+        animation-delay: 2s;
+    }
+
+    .floating-shapes span:nth-child(3) {
+        width: 40px;
+        height: 40px;
+        bottom: 20%;
+        left: 30%;
+        animation-delay: 4s;
+    }
+
+    @keyframes float {
+
+        0%,
+        100% {
+            transform: translateY(0) rotate(0deg);
+        }
+
+        50% {
+            transform: translateY(-20px) rotate(10deg);
+        }
+    }
+
+    /* Right Form Panel */
+    .auth-form-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem 3rem;
+        background: white;
+        overflow-y: auto;
+    }
+
+    .auth-form-wrapper {
+        width: 100%;
+        max-width: 500px;
+        animation: fadeIn 0.6s ease-out 0.2s both;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .auth-form-wrapper h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+
+    .auth-form-wrapper .subtitle {
+        color: #6b7280;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Form Field Styling */
+    .form-floating {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+    .form-floating .form-control {
+        height: 52px;
+        padding: 0.875rem 1rem 0.875rem 2.75rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: #f9fafb;
+    }
+
+    .form-floating .form-control:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        background: white;
+    }
+
+    .form-floating .form-control::placeholder {
+        color: #9ca3af;
+    }
+
+    .form-floating .input-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        font-size: 1rem;
+        transition: color 0.3s ease;
+    }
+
+    .form-floating .form-control:focus+.input-icon,
+    .form-floating .form-control:not(:placeholder-shown)+.input-icon {
+        color: #6366f1;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #9ca3af;
+        cursor: pointer;
+        padding: 0;
+        transition: color 0.3s ease;
+    }
+
+    .password-toggle:hover {
+        color: #6366f1;
+    }
+
+    /* Two-column row */
+    .form-row {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .form-row .form-floating {
+        flex: 1;
+    }
+
+    /* Submit Button */
+    .btn-auth {
+        width: 100%;
+        height: 52px;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        border: none;
         border-radius: 12px;
         color: white;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        margin-top: 0.5rem;
     }
-    .auth-card {
-        border-radius: 16px !important;
-        backdrop-filter: blur(10px);
+
+    .btn-auth::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
     }
-    .input-group-text {
-        background-color: #f6fff7;
+
+    .btn-auth:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.35);
     }
-    .form-control:focus {
-        border-color: #28a745;
-        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+
+    .btn-auth:hover::before {
+        left: 100%;
     }
-    .btn-success {
-        border-radius: 8px;
-        padding: 10px;
-        font-size: 16px;
+
+    .btn-auth:active {
+        transform: translateY(0);
     }
-    .auth-link:hover {
-        text-decoration: underline !important;
+
+    /* Alert Styling */
+    .auth-alert {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 12px;
+        padding: 0.875rem 1rem;
+        margin-bottom: 1.25rem;
+        color: #dc2626;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+
+        0%,
+        100% {
+            transform: translateX(0);
+        }
+
+        25% {
+            transform: translateX(-5px);
+        }
+
+        75% {
+            transform: translateX(5px);
+        }
+    }
+
+    .auth-alert i {
+        font-size: 1.25rem;
+    }
+
+    /* Password Strength */
+    .password-strength {
+        display: flex;
+        gap: 4px;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .strength-bar {
+        height: 4px;
+        flex: 1;
+        background: #e5e7eb;
+        border-radius: 2px;
+        transition: background 0.3s ease;
+    }
+
+    .strength-bar.weak {
+        background: #ef4444;
+    }
+
+    .strength-bar.medium {
+        background: #f59e0b;
+    }
+
+    .strength-bar.strong {
+        background: #10b981;
+    }
+
+    .strength-text {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Footer Link */
+    .auth-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        color: #6b7280;
+    }
+
+    .auth-footer a {
+        color: #6366f1;
+        font-weight: 600;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .auth-footer a:hover {
+        color: #4f46e5;
+        text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 991px) {
+        .auth-container {
+            flex-direction: column;
+        }
+
+        .auth-branding {
+            flex: 0 0 auto;
+            min-height: 220px;
+            padding: 1.5rem;
+        }
+
+        .glass-card {
+            padding: 1.25rem;
+            max-width: 100%;
+        }
+
+        .glass-card h1 {
+            font-size: 1.35rem;
+        }
+
+        .glass-card p {
+            font-size: 0.9rem;
+        }
+
+        .auth-form-panel {
+            flex: 1;
+            padding: 1.5rem;
+        }
+
+        .form-row {
+            flex-direction: column;
+            gap: 0;
+        }
     }
 </style>
 
-<div class="container py-5">
-    <div class="auth-hero text-center py-5 shadow-sm">
-        <h1 class="display-5 fw-bold">Join Catalyst AI</h1>
-        <p class="lead mb-0">AI-Driven Career Readiness Platform</p>
-
-        {% if message %}
-        <div class="alert alert-danger text-center mt-3" role="alert">
-            {{ message }}
+<div class="auth-container">
+    <!-- Left Branding Panel -->
+    <div class="auth-branding">
+        <div class="floating-shapes">
+            <span></span>
+            <span></span>
+            <span></span>
         </div>
-        {% endif %}
+        <div class="glass-card">
+            <img src="{{ url_for('static', filename='Images/Catalyst-AI-Bulb.png') }}" alt="Catalyst AI">
+            <h1>Join Catalyst AI</h1>
+            <p>Start your journey to career success with AI-powered guidance and personalized learning paths.</p>
+        </div>
     </div>
 
-    <div class="row justify-content-center mt-5">
-        <div class="col-md-6">
-            <div class="card shadow-lg auth-card">
-                <div class="card-header bg-success-subtle text-center">
-                    <h4 class="text-dark m-2">Create Your Account</h4>
-                </div>
+    <!-- Right Form Panel -->
+    <div class="auth-form-panel">
+        <div class="auth-form-wrapper">
+            <h2>Create Account</h2>
+            <p class="subtitle">Fill in your details to get started</p>
 
-                <div class="card-body p-4">
+            {% if error or message %}
+            <div class="auth-alert">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>{{ error or message }}</span>
+            </div>
+            {% endif %}
 
-                    {% if error %}
-                    <div class="alert alert-danger text-center" role="alert">
-                        {{ error }}
+            <form action="/sign_up" method="post">
+                <!-- Username & Name Row -->
+                <div class="form-row">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Username"
+                            required>
+                        <i class="fas fa-at input-icon"></i>
                     </div>
-                    {% endif %}
-
-                    <form action="/sign_up" method="post">
-
-                        <!-- Username -->
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Username</label>
-                            <div class="input-group">
-                                <div class="input-group-text"><i class="fas fa-user"></i></div>
-                                <input type="text" class="form-control" name="username" placeholder="Enter username" required>
-                            </div>
-                        </div>
-
-                        <!-- Name -->
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Name</label>
-                            <div class="input-group">
-                                <div class="input-group-text"><i class="fas fa-user-tag"></i></div>
-                                <input type="text" class="form-control" name="name" placeholder="Enter full name" required>
-                            </div>
-                        </div>
-
-                        <!-- Email -->
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Email</label>
-                            <div class="input-group">
-                                <div class="input-group-text"><i class="fas fa-envelope"></i></div>
-                                <input type="email" class="form-control" name="email" placeholder="Enter email" required>
-                            </div>
-                        </div>
-
-                        <!-- Phone -->
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Phone Number</label>
-                            <div class="input-group">
-                                <div class="input-group-text"><i class="fas fa-phone"></i></div>
-                                <input type="tel" class="form-control" name="phone" placeholder="Enter phone number" required>
-                            </div>
-                        </div>
-
-                        <!-- DOB -->
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Date of Birth</label>
-                            <div class="input-group">
-                                <div class="input-group-text"><i class="fas fa-calendar-alt"></i></div>
-                                <input type="date" class="form-control" name="dob" required>
-                            </div>
-                        </div>
-
-                        <!-- Password -->
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Password</label>
-                            <div class="input-group">
-                                <div class="input-group-text"><i class="fas fa-key"></i></div>
-                                <input type="password" class="form-control" name="password" placeholder="Enter password" required>
-                            </div>
-                        </div>
-
-                        <!-- Confirm Password -->
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Confirm Password</label>
-                            <div class="input-group">
-                                <div class="input-group-text"><i class="fas fa-lock"></i></div>
-                                <input type="password" class="form-control" name="confirm_password" placeholder="Confirm password" required>
-                            </div>
-                        </div>
-
-                        <!-- Button -->
-                        <button type="submit" class="btn btn-success w-100 mt-2">Sign Up</button>
-                    </form>
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="name" name="name" placeholder="Full Name" required>
+                        <i class="fas fa-user input-icon"></i>
+                    </div>
                 </div>
 
-                <div class="card-footer text-center bg-light py-3">
-                    <small class="text-muted">
-                        Already have an account?
-                        <a href="/sign_in" class="text-decoration-none auth-link">Log in here</a>.
-                    </small>
+                <!-- Email Field -->
+                <div class="form-floating">
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Email Address"
+                        required>
+                    <i class="fas fa-envelope input-icon"></i>
                 </div>
+
+                <!-- Phone & DOB Row -->
+                <div class="form-row">
+                    <div class="form-floating">
+                        <input type="tel" class="form-control" id="phone" name="phone" placeholder="Phone Number"
+                            required>
+                        <i class="fas fa-phone input-icon"></i>
+                    </div>
+                    <div class="form-floating">
+                        <input type="date" class="form-control" id="dob" name="dob" required>
+                        <i class="fas fa-calendar input-icon"></i>
+                    </div>
+                </div>
+
+                <!-- Password Field -->
+                <div class="form-floating">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Password"
+                        required oninput="checkPasswordStrength(this.value)">
+                    <i class="fas fa-lock input-icon"></i>
+                    <button type="button" class="password-toggle" onclick="togglePassword('password', 'toggleIcon1')">
+                        <i class="fas fa-eye" id="toggleIcon1"></i>
+                    </button>
+                </div>
+                <div class="password-strength">
+                    <div class="strength-bar" id="bar1"></div>
+                    <div class="strength-bar" id="bar2"></div>
+                    <div class="strength-bar" id="bar3"></div>
+                    <div class="strength-bar" id="bar4"></div>
+                </div>
+                <div class="strength-text" id="strengthText">Password strength indicator</div>
+
+                <!-- Confirm Password Field -->
+                <div class="form-floating">
+                    <input type="password" class="form-control" id="confirm_password" name="confirm_password"
+                        placeholder="Confirm Password" required>
+                    <i class="fas fa-shield-alt input-icon"></i>
+                    <button type="button" class="password-toggle"
+                        onclick="togglePassword('confirm_password', 'toggleIcon2')">
+                        <i class="fas fa-eye" id="toggleIcon2"></i>
+                    </button>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-auth">
+                    Create Account <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                Already have an account? <a href="/sign_in">Sign in</a>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    function togglePassword(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    function checkPasswordStrength(password) {
+        const bars = [
+            document.getElementById('bar1'),
+            document.getElementById('bar2'),
+            document.getElementById('bar3'),
+            document.getElementById('bar4')
+        ];
+        const strengthText = document.getElementById('strengthText');
+
+        // Reset
+        bars.forEach(bar => bar.className = 'strength-bar');
+
+        if (password.length === 0) {
+            strengthText.textContent = 'Password strength indicator';
+            return;
+        }
+
+        let strength = 0;
+        if (password.length >= 6) strength++;
+        if (password.length >= 10) strength++;
+        if (/[A-Z]/.test(password) && /[a-z]/.test(password)) strength++;
+        if (/[0-9]/.test(password)) strength++;
+        if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+        let level = '';
+        let color = '';
+
+        if (strength <= 2) {
+            level = 'Weak';
+            color = 'weak';
+            bars[0].classList.add(color);
+        } else if (strength === 3) {
+            level = 'Medium';
+            color = 'medium';
+            bars[0].classList.add(color);
+            bars[1].classList.add(color);
+        } else if (strength === 4) {
+            level = 'Strong';
+            color = 'strong';
+            bars[0].classList.add(color);
+            bars[1].classList.add(color);
+            bars[2].classList.add(color);
+        } else {
+            level = 'Very Strong';
+            color = 'strong';
+            bars.forEach(bar => bar.classList.add(color));
+        }
+
+        strengthText.textContent = level + ' password';
+    }
+</script>
 
 {% endblock %}
