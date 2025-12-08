@@ -18,17 +18,20 @@ Catalyst AI addresses these challenges by providing AI-powered personalized lear
 ## 🛠️ Key Features of the MVP
 
 ### 🔍 Personalized Profile Analysis
+
 - Comprehensive profile creation capturing career goals and skills
 - Integration with LinkedIn, GitHub, and other professional platforms
 - Data-driven assessment of strengths and areas for improvement
 
 ### 🗺️ AI-Generated Career Roadmaps
+
 - Tailored learning paths based on individual career aspirations
 - Phase-based structure with clear milestones and timelines
 - Daily task breakdowns with curated resources
 - Progress tracking with visual indicators
 
 ### 🤖 AI Tutor for Interactive Learning
+
 - Topic-specific AI mentoring for each module
 - Contextual conversation that retains learning history
 - Integration with multiple resource sources:
@@ -38,6 +41,7 @@ Catalyst AI addresses these challenges by providing AI-powered personalized lear
   - Real-time Q&A and concept explanations
 
 ### 💬 LEO-AI: 24/7 Personal Mentor
+
 - Intelligent personal assistant with deep knowledge of user's profile
 - Skill gap analysis and project recommendations
 - Career guidance aligned with industry trends
@@ -46,44 +50,52 @@ Catalyst AI addresses these challenges by providing AI-powered personalized lear
 ## 🧠 Technology Stack Used for the MVP
 
 ### UI Technologies
+
 - HTML, CSS, JavaScript
 - Bootstrap for responsive design
 
 ### Backend & Database
+
 - Python (Flask) for backend operations and API handling
 - MongoDB for user data, roadmap progress, and interaction history
 
 ### APIs & Integrations
+
 - Medium API for tech blogs
 - YouTube API for video resources
 - LinkedIn API for professional profile analysis
 - GitHub API for technical capabilities assessment
 
 ### AI Technologies
+
 - Gemini Flash 2.5 for real-time assistance and chat interactions
 - Groq cloud with meta-llama/llama-4-scout-17b-16e-instruct for roadmap generation and AI guidance
 
 ## ⚙️ Installation
 
 1. Clone the repository
+
 ```bash
 git clone https://github.com/devanshx72/Catalyst AI.git
 cd Catalyst AI
 ```
 
 2. Set up virtual environment
+
 ```bash
 python -m venv catalyst-ai
 source catalyst-ai/bin/activate  # On Windows: catalyst-ai\Scripts\activate
 ```
 
 3. Install dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
 4. Set up environment variables (.env file)
-```
+
+```text
 MONGO_URI=mongodb://localhost:27017/
 DB_NAME=Catalyst AI-db
 SECRET_KEY=your-secret-key
@@ -96,13 +108,14 @@ LINKEDIN_API_KEY=your-linkedin-api-key
 ```
 
 5. Run the application
+
 ```bash
 python run.py
 ```
 
 ## 📂 Project Structure
 
-```
+```text
 Catalyst AI/
 ├── .env               # Environment variables
 ├── .gitignore         # Git ignore file
@@ -125,17 +138,16 @@ Catalyst AI/
 │       └── resource_utils.py
 ```
 
-
 ## 💫 Impact & Purpose
 
 Catalyst AI is not just for elite institutions or privileged students - it's for everyone. This platform directly aligns with the **UN Sustainable Development Goal 4 (Quality Education)** by ensuring inclusive and equitable quality education and promoting lifelong learning opportunities for all.
 
 This platform aims to democratize access to quality career guidance and personalized learning paths, serving as a beacon of hope for:
 
-* Students from underserved communities lacking mentorship resources
-* Self-learners navigating complex career transitions without guidance
-* Educational institutions seeking to provide personalized support at scale
-* Anyone feeling lost in their educational journey
+- Students from underserved communities lacking mentorship resources
+- Self-learners navigating complex career transitions without guidance
+- Educational institutions seeking to provide personalized support at scale
+- Anyone feeling lost in their educational journey
 
 By leveraging AI to make personalized education accessible regardless of geographical or socioeconomic barriers, Catalyst AI helps bridge the global education divide. The platform embodies SDG 4's core mission of ensuring that all learners acquire the knowledge and skills needed for sustainable development and successful careers.
 
@@ -150,13 +162,14 @@ Catalyst AI is designed to evolve into a comprehensive educational ecosystem:
 - **For Companies**: Better talent assessment based on verified skills and industry-relevant projects
 
 Future enhancements include:
+
 - Enhanced AI interaction with advanced reasoning capabilities
 - Deeper integration with learning management systems
 - Expanded analytics for educational institutions
 - Mobile application development
 - Support for diverse career paths beyond technology
 
-### Upcoming Features:
+### Upcoming Features
 
 - **AI-Driven Evaluation System**: After completing each topic, users will toggle the 'Completed' button, and the AI will assess their understanding through interactive tests.
 
@@ -176,13 +189,10 @@ This project was created and is maintained by:
 
 ## 🙏 Acknowledgements
 
-* Groq for their powerful LLM API that powers our AI Tutor
-* MongoDB for the flexible document database
-* Bootstrap for the responsive UI components
-* The creators of the open-source template used for parts of the UI
-* All the libraries and APIs that made this project possible
+- Groq for their powerful LLM API that powers our AI Tutor
+- MongoDB for the flexible document database
+- Bootstrap for the responsive UI components
+- The creators of the open-source template used for parts of the UI
+- All the libraries and APIs that made this project possible
 
----
-
-*An AF's Endeavor Developed with 🥤 and 💡*
 =======
