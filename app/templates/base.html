@@ -308,6 +308,245 @@
     .notification-item:hover {
       background: #f9fafb;
     }
+
+    /* ==============================================
+       GLOBAL MOBILE RESPONSIVE STYLES
+       ============================================== */
+
+    /* Tablet and below (max-width: 991px) */
+    @media (max-width: 991px) {
+
+      /* Hide sidebar by default on mobile */
+      .sidebar {
+        transform: translateX(-100%);
+        width: var(--sidebar-width);
+      }
+
+      .sidebar.show {
+        transform: translateX(0);
+      }
+
+      .main-panel {
+        margin-left: 0 !important;
+      }
+
+      .content-wrapper {
+        padding: 1.25rem;
+      }
+
+      /* Reduce navbar padding */
+      .navbar {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+      }
+
+      /* Footer adjustments */
+      .footer {
+        padding: 1rem !important;
+        text-align: center;
+      }
+    }
+
+    /* Mobile devices (max-width: 768px) */
+    @media (max-width: 768px) {
+
+      /* Global font size reduction */
+      html {
+        font-size: 14px;
+      }
+
+      body {
+        font-size: 0.9rem;
+      }
+
+      /* Headings reduction */
+      h1,
+      .h1 {
+        font-size: 1.75rem !important;
+      }
+
+      h2,
+      .h2 {
+        font-size: 1.5rem !important;
+      }
+
+      h3,
+      .h3 {
+        font-size: 1.25rem !important;
+      }
+
+      h4,
+      .h4 {
+        font-size: 1.1rem !important;
+      }
+
+      h5,
+      .h5 {
+        font-size: 1rem !important;
+      }
+
+      h6,
+      .h6 {
+        font-size: 0.9rem !important;
+      }
+
+      /* Display headings */
+      .display-1,
+      .display-2,
+      .display-3 {
+        font-size: 2rem !important;
+      }
+
+      .display-4,
+      .display-5,
+      .display-6 {
+        font-size: 1.5rem !important;
+      }
+
+      /* Content wrapper smaller padding */
+      .content-wrapper {
+        padding: 1rem;
+      }
+
+      /* Cards and glass containers */
+      .glass-card,
+      .card,
+      .content {
+        padding: 1rem !important;
+        border-radius: 16px !important;
+      }
+
+      /* Buttons - touch friendly */
+      .btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+      }
+
+      .btn-lg {
+        padding: 0.75rem 1.25rem;
+        font-size: 0.95rem;
+      }
+
+      /* Form inputs */
+      .form-control,
+      .form-select {
+        font-size: 16px !important;
+        /* Prevent zoom on iOS */
+        padding: 0.6rem 0.75rem;
+      }
+
+      /* Badges smaller */
+      .badge {
+        font-size: 0.7rem;
+        padding: 0.3em 0.6em;
+      }
+
+      /* Tables scroll horizontally */
+      .table-responsive {
+        font-size: 0.85rem;
+      }
+
+      /* Lead text */
+      .lead {
+        font-size: 1rem !important;
+      }
+
+      /* Navbar brand smaller */
+      .navbar-brand img {
+        height: 35px !important;
+      }
+
+      /* Container full width on mobile */
+      .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+    }
+
+    /* Small mobile devices (max-width: 480px) */
+    @media (max-width: 480px) {
+
+      /* Even smaller font */
+      html {
+        font-size: 13px;
+      }
+
+      /* Tighter padding */
+      .content-wrapper {
+        padding: 0.75rem;
+      }
+
+      /* Headings */
+      h1,
+      .h1 {
+        font-size: 1.5rem !important;
+      }
+
+      h2,
+      .h2 {
+        font-size: 1.35rem !important;
+      }
+
+      .display-1,
+      .display-2,
+      .display-3,
+      .display-4,
+      .display-5,
+      .display-6 {
+        font-size: 1.5rem !important;
+      }
+
+      /* Cards */
+      .glass-card,
+      .card,
+      .content {
+        padding: 0.875rem !important;
+        border-radius: 12px !important;
+      }
+
+      /* Full width buttons on small screens */
+      .btn-lg {
+        width: 100%;
+      }
+
+      /* Navbar height reduction */
+      .navbar {
+        height: 60px;
+      }
+
+      .page-body-wrapper {
+        padding-top: 60px;
+      }
+
+      .sidebar {
+        top: 60px;
+        height: calc(100vh - 60px);
+      }
+
+      /* Footer */
+      .footer {
+        font-size: 0.75rem;
+      }
+    }
+
+    /* Touch device improvements */
+    @media (hover: none) and (pointer: coarse) {
+
+      /* Larger touch targets */
+      .nav-link,
+      .dropdown-item,
+      .btn {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+      }
+
+      /* Remove hover effects that don't work on touch */
+      .glass-card:hover,
+      .card:hover {
+        transform: none;
+      }
+    }
   </style>
 </head>
 
