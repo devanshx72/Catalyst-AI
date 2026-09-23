@@ -13,6 +13,8 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
+from app.repositories import conversation_repository
+
 COLLECTION = "user_chat_histories"
 
 
@@ -26,7 +28,26 @@ async def get_module_chat_history(
     phase_id: int,
     module_id: int,
 ) -> List[Dict[str, Any]]:
-    """Retrieve all messages for a specific module."""
+    """
+    Retrieve all messages for a specific module.
+    Queries the authoritative 'conversations' collection first, falling back to legacy collection.
+    """
+    context = {"phase_id": str(phase_id), "module_id": str(module_id)}
+    conv_messages = await conversation_repository.get_messages(
+        db, user_id=user_id, assistant_type="tutor", context=context
+    )
+    if conv_messages:
+        # Normalize to the legacy item format: role, content, timestamp
+        return [
+            {
+                "role": m.get("role", "user"),
+                "content": m.get("content", ""),
+                "timestamp": m.get("created_at", m.get("timestamp")),
+            }
+            for m in conv_messages
+        ]
+
+    # Legacy fallback
     doc = await db[COLLECTION].find_one({"user_id": user_id})
     if not doc or "modules" not in doc:
         return []
@@ -42,11 +63,24 @@ async def append_module_messages(
     messages: List[Dict[str, Any]],
 ) -> None:
     """
-    Append new messages (user + assistant) to the module chat history.
-    Creates the document/module list if it does not exist (upsert).
+    Append new messages to both the authoritative 'conversations' collection
+    and the legacy 'user_chat_histories' collection.
     """
+    context = {"phase_id": str(phase_id), "module_id": str(module_id)}
+    
+    # 1. Authoritative conversations collection
+    for msg in messages:
+        await conversation_repository.append_message(
+            db=db,
+            user_id=user_id,
+            assistant_type="tutor",
+            role=msg.get("role", "user"),
+            content=msg.get("content", ""),
+            context=context,
+        )
+
+    # 2. Dual-write to legacy user_chat_histories for zero-downtime safety
     module_key = _make_module_key(phase_id, module_id)
-    # Ensure all messages have timestamp
     for msg in messages:
         if "timestamp" not in msg:
             msg["timestamp"] = datetime.now(tz=timezone.utc).isoformat()
@@ -64,10 +98,16 @@ async def clear_module_chat_history(
     phase_id: int,
     module_id: int,
 ) -> None:
-    """Clear chat history array for a specific module."""
+    """Clear chat history for a specific module across both collections."""
+    context = {"phase_id": str(phase_id), "module_id": str(module_id)}
+    await conversation_repository.clear_messages(
+        db=db, user_id=user_id, assistant_type="tutor", context=context
+    )
+
     module_key = _make_module_key(phase_id, module_id)
     await db[COLLECTION].update_one(
         {"user_id": user_id},
         {"$set": {f"modules.{module_key}": []}},
         upsert=True,
     )
+

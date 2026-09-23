@@ -21,7 +21,7 @@ import markdown2
 from mistralai import Mistral
 
 from app.core.config import settings
-from app.repositories import coach_repository, user_repository
+from app.repositories import coach_repository, resume_repository, user_repository
 from app.schemas.coach import (
     CoachChatResponse,
     CoachClearHistoryResponse,
@@ -29,6 +29,9 @@ from app.schemas.coach import (
     CoachMessagesResponse,
 )
 from app.services.github_service import fetch_github_projects
+
+from app.core.config import settings
+from app.core.llm import get_mistral_client, get_mistral_model
 
 logger = logging.getLogger(__name__)
 
@@ -38,13 +41,7 @@ MISTRAL_FALLBACK_TEXT = (
 
 
 def _get_mistral_client() -> Optional[Mistral]:
-    if not settings.MISTRAL_API_KEY:
-        return None
-    try:
-        return Mistral(api_key=settings.MISTRAL_API_KEY)
-    except Exception as e:
-        logger.warning("Failed to initialize Mistral client: %s", e)
-        return None
+    return get_mistral_client()
 
 
 def sanitize_text(text: Optional[str]) -> str:
@@ -253,13 +250,14 @@ async def chat_with_coach(
     """
     user_record = await user_repository.find_by_user_id(db, user_id) or {}
 
-    # 1. Fetch LinkedIn data from db if present (gracefully handling empty fields)
-    rich_data = await coach_repository.get_linkedin_profile_data(db, user_id) or {}
-    if not rich_data:
-        rich_data = dict(user_record)
-        rich_data.setdefault("experiences", [])
-        rich_data.setdefault("education", [])
-        rich_data.setdefault("interests", user_record.get("key_interests", []))
+    # 1. Fetch structured resume data from resumes collection
+    active_resume = await resume_repository.find_active_by_user_id(db, user_id) or {}
+    parsed_resume = active_resume.get("parsed_data", {})
+    rich_data = dict(user_record)
+    rich_data["experiences"] = [exp.get("role") + " at " + exp.get("company") for exp in parsed_resume.get("experience", [])]
+    rich_data["education"] = [edu.get("degree") + " from " + edu.get("institution") for edu in parsed_resume.get("education", [])]
+    rich_data["skills"] = parsed_resume.get("skills", [])
+    rich_data["interests"] = user_record.get("key_interests", [])
 
     # 2. Fetch GitHub projects
     github_url = user_record.get("github_profile") or user_record.get("githubProfile")

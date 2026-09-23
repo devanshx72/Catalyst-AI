@@ -111,6 +111,17 @@ export default function Sidebar({ collapsed = false }: SidebarProps) {
             </Link>
           </li>
 
+          {/* Onboarding & Career Blueprint */}
+          <li className="nav-item">
+            <Link
+              href="/onboarding"
+              className={`nav-link ${isActive("/onboarding") ? "active" : ""}`}
+            >
+              <span className="nav-icon">🎯</span>
+              {!collapsed && <span className="nav-label">Career Blueprint</span>}
+            </Link>
+          </li>
+
           {/* Leo Coach */}
           <li className="nav-item">
             <Link

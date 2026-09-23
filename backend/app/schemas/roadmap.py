@@ -11,13 +11,50 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 
+class RoadmapValidationReport(BaseModel):
+    is_valid: bool = True
+    issues: List[str] = Field(default_factory=list)
+    workload_hours_per_week: Optional[float] = None
+    prerequisites_valid: bool = True
+
+
+class RoadmapEvaluationScore(BaseModel):
+    overall_score: float = 1.0
+    goal_alignment: float = 1.0
+    skill_coverage: float = 1.0
+    timeline_feasibility: float = 1.0
+    recommendation: str = "accept"
+    notes: Optional[str] = None
+
+
+class RoadmapGenerateRequest(BaseModel):
+    goal_id: Optional[str] = None
+    force_regenerate: bool = False
+
+
+class RoadmapGenerateResponse(BaseModel):
+    status: str
+    message: str
+    roadmap_id: str
+    version: int
+    validation: RoadmapValidationReport
+    evaluation: RoadmapEvaluationScore
+
+
 class RoadmapResponse(BaseModel):
     """Returned by GET /api/v1/roadmap."""
 
     has_career_goal: bool
     has_roadmap: bool
     career_goal: Optional[str] = None
+    roadmap_id: Optional[str] = None
+    version: Optional[int] = 1
+    target_duration_months: Optional[int] = None
+    weekly_hours: Optional[int] = None
     roadmap_data: Optional[Dict[str, Any]] = None
+    validation_report: Optional[RoadmapValidationReport] = None
+    evaluation_score: Optional[RoadmapEvaluationScore] = None
+    progress_summary: Optional[Dict[str, Any]] = None
 
     model_config = ConfigDict(extra="ignore")
 

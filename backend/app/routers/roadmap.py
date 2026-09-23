@@ -15,6 +15,8 @@ from app.core.dependencies import get_db, get_current_session
 from app.schemas.roadmap import (
     PhasePlanResponse,
     PlanGenerateResponse,
+    RoadmapGenerateRequest,
+    RoadmapGenerateResponse,
     RoadmapResponse,
     TaskCompleteRequest,
     TaskCompleteResponse,
@@ -22,6 +24,7 @@ from app.schemas.roadmap import (
 from app.services.roadmap_service import (
     complete_task,
     generate_phase_plan,
+    generate_user_roadmap,
     get_phase_plan,
     get_user_roadmap,
 )
@@ -44,6 +47,28 @@ async def get_roadmap(
     Returns flags `has_career_goal` and `has_roadmap` along with roadmap data.
     """
     return await get_user_roadmap(db=db, user_id=session["user_id"])
+
+
+@router.post(
+    "/generate",
+    response_model=RoadmapGenerateResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Generate, validate, and activate a personalized 4-phase roadmap",
+)
+async def generate_roadmap(
+    payload: RoadmapGenerateRequest = RoadmapGenerateRequest(),
+    db: AsyncIOMotorDatabase = Depends(get_db),
+    session: dict = Depends(get_current_session),
+) -> RoadmapGenerateResponse:
+    """
+    Generate or regenerate a verified 4-phase milestone curriculum based on the
+    user's active career goal, availability, and resume skill gap.
+    """
+    return await generate_user_roadmap(
+        db=db,
+        user_id=session["user_id"],
+        force_regenerate=payload.force_regenerate,
+    )
 
 
 @router.post(

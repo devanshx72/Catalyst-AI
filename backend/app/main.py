@@ -12,8 +12,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.database import close_db, connect_db
 from app.routers import auth as auth_router
 from app.routers import coach as coach_router
+from app.routers import goals as goals_router
 from app.routers import home as home_router
 from app.routers import profile as profile_router
+from app.routers import resume as resume_router
 from app.routers import roadmap as roadmap_router
 from app.routers import tutor as tutor_router
 
@@ -56,6 +58,8 @@ def create_app() -> FastAPI:
     # ── Routers ───────────────────────────────────────────────────────────────
     app.include_router(auth_router.router)
     app.include_router(profile_router.router)
+    app.include_router(resume_router.router)
+    app.include_router(goals_router.router)
     app.include_router(roadmap_router.router)
     app.include_router(tutor_router.router)
     app.include_router(coach_router.router)

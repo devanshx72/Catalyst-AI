@@ -15,18 +15,13 @@ from typing import Any, Dict, List, Optional
 from groq import Groq
 
 from app.core.config import settings
+from app.core.llm import get_groq_client, get_groq_model
 
 logger = logging.getLogger(__name__)
 
 
 def _get_groq_client() -> Optional[Groq]:
-    if not settings.GROQ_API_KEY:
-        return None
-    try:
-        return Groq(api_key=settings.GROQ_API_KEY)
-    except Exception as e:
-        logger.warning("Failed to initialize Groq client: %s", e)
-        return None
+    return get_groq_client()
 
 
 def get_fallback_learning_plan(phase_name: str) -> Dict[str, Any]:

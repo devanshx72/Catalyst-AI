@@ -46,17 +46,51 @@ async def get_user_notifications(
     return notifications
 
 
+async def create_notification(
+    db: AsyncIOMotorDatabase,
+    user_id: str,
+    notification_type: str,
+    title: str,
+    message: str,
+    entity_type: Optional[str] = None,
+    entity_id: Optional[str] = None,
+) -> str:
+    """
+    Create a typed notification conforming to Document 3 Section 31.
+    Types: 'roadmap_ready', 'roadmap_failed', 'learning_task_due', 'learning_milestone'.
+    """
+    now = datetime.now(timezone.utc).isoformat()
+    doc: Dict[str, Any] = {
+        "user_id": user_id,
+        "type": notification_type,
+        "title": title,
+        "message": message,
+        "read": False,
+        "created_at": now,
+    }
+    if entity_type and entity_id:
+        doc["entity"] = {
+            "type": entity_type,
+            "id": entity_id,
+        }
+
+    result = await db[COLLECTION].insert_one(doc)
+    return str(result.inserted_id)
+
+
 async def add_notification(
     db: AsyncIOMotorDatabase,
     notification_data: Dict[str, Any],
 ) -> str:
     """
-    Insert a new notification document.
-    Ported from legacy db_utils.py:111-113 (currently uncalled).
+    Insert a new notification document. Supports legacy and structured fields.
     """
     doc = dict(notification_data)
     if "created_at" not in doc:
-        doc["created_at"] = datetime.now(tz=timezone.utc)
+        doc["created_at"] = datetime.now(tz=timezone.utc).isoformat()
+    elif isinstance(doc["created_at"], datetime):
+        doc["created_at"] = doc["created_at"].isoformat()
+
     if "read" not in doc:
         doc["read"] = False
 
@@ -67,18 +101,23 @@ async def add_notification(
 async def mark_notification_read(
     db: AsyncIOMotorDatabase,
     notification_id: str,
+    user_id: Optional[str] = None,
 ) -> bool:
     """
-    Mark a notification as read.
-    Ported from legacy db_utils.py:123-128 (currently uncalled).
+    Mark a notification as read with optional user ownership validation.
     """
     try:
         oid = ObjectId(notification_id)
     except Exception:
         return False
 
+    query: Dict[str, Any] = {"_id": oid}
+    if user_id:
+        query["user_id"] = user_id
+
     result = await db[COLLECTION].update_one(
-        {"_id": oid},
+        query,
         {"$set": {"read": True}},
     )
     return result.modified_count > 0
+

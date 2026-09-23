@@ -14,6 +14,9 @@ import type {
   CoachChatResponse,
   CoachClearHistoryResponse,
   CoachMessagesResponse,
+  GoalCreateRequest,
+  GoalResponse,
+  GoalUpdateRequest,
   HomeResponse,
   LoginRequest,
   LoginResponse,
@@ -27,7 +30,11 @@ import type {
   RegisterRequest,
   RegisterResponse,
   ResourceResponse,
+  ResumeResponse,
+  ResumeUpdateRequest,
+  RoadmapGenerateResponse,
   RoadmapResponse,
+  SkillGapResponse,
   TaskCompleteRequest,
   TaskCompleteResponse,
   TutorContextResponse,
@@ -148,6 +155,75 @@ export async function completeTask(data: TaskCompleteRequest): Promise<TaskCompl
   return request<TaskCompleteResponse>("/api/v1/roadmap/tasks/complete", {
     method: "PATCH",
     body: JSON.stringify(data),
+  });
+}
+
+export async function generateRoadmap(forceRegenerate: boolean = false): Promise<RoadmapGenerateResponse> {
+  return request<RoadmapGenerateResponse>("/api/v1/roadmap/generate", {
+    method: "POST",
+    body: JSON.stringify({ force_regenerate: forceRegenerate }),
+  });
+}
+
+// ── Resume Intelligence Service ─────────────────────────────────────────────
+
+export async function uploadResume(file: File): Promise<ResumeResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+  return request<ResumeResponse>("/api/v1/resumes/upload", {
+    method: "POST",
+    body: formData,
+  });
+}
+
+export async function getActiveResume(): Promise<ResumeResponse | null> {
+  try {
+    return await request<ResumeResponse>("/api/v1/resumes/active", {
+      method: "GET",
+    });
+  } catch (err: any) {
+    if (err.status === 404) return null;
+    throw err;
+  }
+}
+
+export async function updateParsedResume(data: ResumeUpdateRequest): Promise<ResumeResponse> {
+  return request<ResumeResponse>("/api/v1/resumes/active", {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+// ── Career Goals & Skill Gap Service ────────────────────────────────────────
+
+export async function getActiveGoal(): Promise<GoalResponse | null> {
+  try {
+    return await request<GoalResponse>("/api/v1/goals/active", {
+      method: "GET",
+    });
+  } catch (err: any) {
+    if (err.status === 404) return null;
+    throw err;
+  }
+}
+
+export async function createGoal(data: GoalCreateRequest): Promise<GoalResponse> {
+  return request<GoalResponse>("/api/v1/goals", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateGoal(goalId: string, data: GoalUpdateRequest): Promise<GoalResponse> {
+  return request<GoalResponse>(`/api/v1/goals/${goalId}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function getSkillGap(): Promise<SkillGapResponse> {
+  return request<SkillGapResponse>("/api/v1/goals/skill-gap", {
+    method: "GET",
   });
 }
 
@@ -331,9 +407,18 @@ const api = {
   updateProfile,
   // Roadmap
   getRoadmap,
+  generateRoadmap,
   generatePhasePlan,
   getPhasePlan,
   completeTask,
+  // Resume & Goals
+  uploadResume,
+  getActiveResume,
+  updateParsedResume,
+  getActiveGoal,
+  createGoal,
+  updateGoal,
+  getSkillGap,
   // Tutor
   getTutorContext,
   clearTutorHistory,

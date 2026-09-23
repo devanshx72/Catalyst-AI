@@ -17,8 +17,9 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
+from app.repositories import conversation_repository
+
 COLLECTION_COACH = "career_coach"
-COLLECTION_LINKEDIN = "linkedin_data"
 
 
 async def get_conversation(
@@ -36,9 +37,29 @@ async def append_message_to_conversation(
 ) -> List[Dict[str, Any]]:
     """
     Append a new message to the user's conversation document.
-    Creates a new conversation document if one does not exist.
-    Returns the complete list of messages.
+    Also dual-records to the authoritative 'conversations' collection.
     """
+    # 1. Authoritative conversations collection
+    prompt_text = message.get("prompt", "")
+    response_text = message.get("raw_response", message.get("response", ""))
+    if prompt_text:
+        await conversation_repository.append_message(
+            db=db,
+            user_id=user_id,
+            assistant_type="coach",
+            role="user",
+            content=prompt_text,
+        )
+    if response_text:
+        await conversation_repository.append_message(
+            db=db,
+            user_id=user_id,
+            assistant_type="coach",
+            role="assistant",
+            content=response_text,
+        )
+
+    # 2. Legacy career_coach collection
     existing = await db[COLLECTION_COACH].find_one({"user_id": user_id})
 
     if not existing:
@@ -63,13 +84,11 @@ async def clear_conversation(
     db: AsyncIOMotorDatabase,
     user_id: str,
 ) -> None:
-    """Delete the user's coaching conversation document (clean slate)."""
+    """Delete the user's coaching conversation document and clear unified conversation."""
+    await conversation_repository.clear_messages(
+        db=db, user_id=user_id, assistant_type="coach"
+    )
     await db[COLLECTION_COACH].delete_one({"user_id": user_id})
 
 
-async def get_linkedin_profile_data(
-    db: AsyncIOMotorDatabase,
-    user_id: str,
-) -> Optional[Dict[str, Any]]:
-    """Retrieve rich scraped LinkedIn data if available."""
-    return await db[COLLECTION_LINKEDIN].find_one({"user_id": user_id})
+

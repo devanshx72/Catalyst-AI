@@ -18,7 +18,7 @@ from typing import Any, AsyncGenerator, Dict, List, Optional
 from fastapi import HTTPException, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from app.repositories import chat_repository, user_repository
+from app.repositories import chat_repository, roadmap_repository, user_repository
 from app.schemas.tutor import (
     ChatMessage,
     ClearHistoryResponse,
@@ -67,14 +67,18 @@ async def get_tutor_context(
     module_id: int,
 ) -> TutorContextResponse:
     """Fetch roadmap module context and historical chat messages for the module."""
-    user_doc = await user_repository.find_by_user_id(db, user_id)
-    if not user_doc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
+    active_roadmap = await roadmap_repository.find_active_by_user_id(db, user_id)
+    if active_roadmap and "phases" in active_roadmap:
+        roadmap_data = active_roadmap
+    else:
+        user_doc = await user_repository.find_by_user_id(db, user_id)
+        if not user_doc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )
+        roadmap_data = _parse_roadmap_data(user_doc)
 
-    roadmap_data = _parse_roadmap_data(user_doc)
     phase, module = _extract_phase_and_module(roadmap_data, phase_id, module_id)
 
     objectives = module.get("learning_objectives", [])
@@ -116,13 +120,17 @@ async def stream_tutor_response(
     Execute streaming LLM call and yield SSE data chunks.
     Persists full conversation to MongoDB after the stream completes.
     """
-    user_doc = await user_repository.find_by_user_id(db, user_id)
-    if not user_doc:
-        yield f"data: {json.dumps({'error': 'User not found'})}\n\n"
-        yield "data: [DONE]\n\n"
-        return
+    active_roadmap = await roadmap_repository.find_active_by_user_id(db, user_id)
+    if active_roadmap and "phases" in active_roadmap:
+        roadmap_data = active_roadmap
+    else:
+        user_doc = await user_repository.find_by_user_id(db, user_id)
+        if not user_doc:
+            yield f"data: {json.dumps({'error': 'User not found'})}\n\n"
+            yield "data: [DONE]\n\n"
+            return
+        roadmap_data = _parse_roadmap_data(user_doc)
 
-    roadmap_data = _parse_roadmap_data(user_doc)
     try:
         phase, module = _extract_phase_and_module(roadmap_data, phase_id, module_id)
     except HTTPException as e:
